@@ -7,7 +7,7 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 - Done: step 1; step 2 audio smoke (pass) and book mechanics smoke (`spikes/book-proto`, gitignored: skinned page curl, canvas text + shader ink reveal, bloom, embers, Web Audio sync all work in headless Chromium).
 - Open from step 2: real-device fps on the reading device; spike lessons: body text needs ~85px+ on a 1536px page and a less oblique camera.
 - Step 3 done (style A painted, 7 sheets). Round 3 prompts written (26 images, batches A–D in `asset-prompts.md`); Arshad generating, batch A first.
-- Now: step 4 mockup (start screen + one spread) from `style-a-painted.jpg` (p03 art).
+- Step 4: mockup v1 saved (`.sayl/sandboxes/reader-spread`, screenshots `docs/mockups/v1-*.webp`). Waiting on Arshad's approval.
 - iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02). Spike preview server stopped.
 
 ## Decisions (Arshad, 2026-10-02)
@@ -21,6 +21,14 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 - Interactions are optional; each auto-resolves after a few seconds so reading never stalls.
 - p09 character cards are cropped from the round 2 sheets (no extra prompts); regenerate as dedicated portraits only if they look soft.
 - Pages are 2:3 portrait to match ChatGPT's 1024×1536 output (spike used 3:4); push-in scenes also get a 3:2 wide. Raw art lands in gitignored `assets-in/`; optimised WebP gets committed.
+
+## Visual direction (mockup v1)
+- Book floats in a world made from the current scene's art, heavily blurred and graded, with firelight/ember or water particles per scene.
+- Teal leather boards with gold tooling; parchment pages; left page = full-bleed art, right page = text.
+- Type: Fraunces (display: title, running heads, folios), Alegreya (body, ~25px on a 474px page).
+- Signature: narration reveals words in wet aqua ink that blurs in, then dries to dark sepia.
+- Start screen: closed book hovering over a dark lake with its reflection; "Read to me" (primary) / "I'll read myself".
+- HUD: one glass bar: chapter name, 18-segment progress grouped by chapter, narration / pause / contents.
 
 ## Architecture
 - Vite + TypeScript + Three.js (pages = skinned bending meshes, page content drawn to canvas textures), GSAP timelines, Howler.js audio. Vanilla Three over React Three Fiber (fewer parts).

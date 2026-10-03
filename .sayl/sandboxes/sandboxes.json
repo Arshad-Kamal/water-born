@@ -1,0 +1,19 @@
+{
+  "sandboxes": [
+    {
+      "slug": "reader-spread",
+      "name": "Reader spread",
+      "kind": "screen",
+      "master": true,
+      "current": 1,
+      "updatedAt": "2026-10-03T07:41:08.419Z",
+      "versions": [
+        {
+          "v": 1,
+          "note": "First mockup: start screen (floating cover over a lake, read-to-me choice) and page 3 spread with wet-ink narration reveal, using James's painted art",
+          "createdAt": "2026-10-03T07:41:08.419Z"
+        }
+      ]
+    }
+  ]
+}

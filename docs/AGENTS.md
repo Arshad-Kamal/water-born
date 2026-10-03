@@ -22,4 +22,5 @@ Loose files:
 - `story-original.md`: verbatim story by James (source of truth).
 - `stack-notes.md`: verified toolchain, ElevenLabs API, and hosting facts with dates.
 - `art-bible.md`: art coherence file (format rules, world, characters, palette). Change it first; prompts derive from it.
+- `mockups/`: screenshots of approved/proposed design-sandbox iterations (source of truth is `.sayl/sandboxes/`).
 - `asset-prompts.md`: copy-paste ChatGPT prompts by round, with target filenames in `assets-in/` (gitignored raw drop folder).
