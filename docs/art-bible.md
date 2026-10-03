@@ -1,7 +1,7 @@
 <!-- 2026-10-02 · Art direction written in session "Water Born 3D storybook" (creative liberty granted by Arshad). Coherence file: every image prompt derives from this. -->
 # Art bible
 
-Status: style A (painted) chosen by James 2026-10-02. Characters below are proposals until James approves the round 2 sheets.
+Status: style A (painted) chosen by James 2026-10-02. Round 2 sheets generated 2026-10-03 and match the table below; the sheets in `assets-in/char-*.jpg` (1264×848) are now the canonical character references (upload the relevant ones with each scene prompt). Footwear canon: Kyle barefoot, the other four in woven sandals (Zoro's sheet mixes both; use sandals).
 
 ## Style lock (every prompt; `assets-in/style-a-painted.jpg` is the reference image)
 Rich hand-painted fantasy storybook illustration, gouache and oil textures with visible brushwork and soft painterly edges, light dark outlines on characters, glowing warm light against cool moonlit blues, deep atmosphere, the feel of a classic illustrated adventure novel.

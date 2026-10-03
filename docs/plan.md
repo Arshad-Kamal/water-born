@@ -6,7 +6,7 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 ## Status (overwrite in place, max 6 lines)
 - Done: step 1; step 2 audio smoke (pass) and book mechanics smoke (`spikes/book-proto`, gitignored: skinned page curl, canvas text + shader ink reveal, bloom, embers, Web Audio sync all work in headless Chromium).
 - Open from step 2: real-device fps on the reading device; spike lessons: body text needs ~85px+ on a 1536px page and a less oblique camera.
-- Step 3: James chose style A (painted); style lock in `art-bible.md`. Round 2 prompts (5 kids, fire soldier, dragon) ready in `asset-prompts.md`. Waiting on Arshad: 7 sheets in `assets-in/` + James's OK on each.
+- Step 3 done: style A (painted); 7 character sheets in `assets-in/char-*.jpg`, consistent with the art bible. Next: round 3 scene prompts + step 4 mockup.
 - iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02). Spike preview server stopped.
 
 ## Decisions (Arshad, 2026-10-02)
@@ -52,7 +52,7 @@ Plus: cover, title page ("Story by James"), back cover with credits.
 ## Steps
 1. [x] Setup: git, `.gitignore`, `.env`, docs + DOX index, AGENTS.md stack/commands, this plan, `docs/story-original.md`, `src/content/book.ts`, `tests/story-verbatim.test.ts`.
 2. [x] Smokes (real-device fps deferred to first deploy): ElevenLabs (subscription/credits, one `with-timestamps` clip on `eleven_v4` with audio tags, one SFX); Three.js page-bend + canvas text prototype checked on the real device.
-3. [ ] Art round 1: `docs/art-bible.md` (characters, palette) + 3 style-test prompts → James picks → character-sheet prompts.
+3. [x] Art round 1: `docs/art-bible.md` (characters, palette) + 3 style-test prompts → James picks → character-sheet prompts.
 4. [ ] Design-sandbox mockup: start screen + one spread → Arshad approves.
 5. [ ] Audio: pick voice → narration with timings → SFX → ambience loops → music.
 6. [ ] Remaining scene prompts (`docs/asset-prompts.md`); Arshad generates into `assets-in/`.
