@@ -7,7 +7,7 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 - Done: steps 1–5. Mockup v1 approved 2026-10-03. Audio: 18 narration, 25 SFX, 7 music (originals `audio-src/`, mastered `public/audio/`).
 - Spike lessons for the engine: body text ~85px+ on a 1536px page texture; less oblique camera than the spike.
 - Arshad generating round 3 art (26 images, `asset-prompts.md`), batch A first.
-- Now: step 7 reader engine.
+- Step 7 IN PROGRESS (WIP checkpoint, typecheck green, not wired, not reviewed): `src/content/scenes.ts`, `src/engine/*`, `src/audio/mixer.ts`, `src/ui/*`, `src/assets.ts`, `index.html`, `src/styles.css`, `vite.config.ts`. Missing: `src/director.ts`, `src/main.ts`, `scripts/build-art.ts` (+ `public/art/manifest.json`), dev/build npm scripts.
 - iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02).
 
 ## Decisions (Arshad, 2026-10-02)
