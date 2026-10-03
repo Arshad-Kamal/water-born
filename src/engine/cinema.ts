@@ -25,7 +25,6 @@ export class Cinema {
 
   /** Shows `image` for `seconds`, resolving once it has faded back out. */
   async play(image: HTMLCanvasElement | HTMLImageElement, width: number, height: number, seconds: number, alive: () => boolean): Promise<void> {
-    this.mesh.material.map?.dispose();
     const tex = new THREE.Texture(image);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.needsUpdate = true;

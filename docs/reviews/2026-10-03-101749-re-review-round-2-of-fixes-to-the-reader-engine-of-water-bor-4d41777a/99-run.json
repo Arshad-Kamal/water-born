@@ -1,0 +1,163 @@
+{
+  "batchId": "4d41777a-22a7-4974-8136-98edec3ef44b",
+  "sessionId": "01a10258-d275-7672-b7e3-24d13aead6fc",
+  "status": "complete",
+  "objective": "Re-review (round 2) of fixes to the reader engine of \"Water Born\", a cinematic …",
+  "objectiveFull": "Re-review (round 2) of fixes to the reader engine of \"Water Born\", a cinematic 3D web storybook (Vite + TypeScript strict + Three.js 0.186 + raw Web Audio, static GitHub Pages site). Review only the fix commit range given. Round 1 findings and what was done (see docs/plan.md \"Review dispositions\", engine round 1): (a) MAJOR src/director.ts speak(): toggling narration off or turning the page during the narration-timing / audio load left the page stuck in mode 'intro' or still started the clip — fixed by re-checking `r === this.reading && this.voice` after each await and, in finally, falling back to mode 'timed' when the page is still current and still 'intro'; (b) MAJOR src/audio/mixer.ts setAmbience: stop() on a loop source that was never started threw InvalidStateError out of Book.onTurnStart — fixed by deleting the entry first and only stopping a source whose buffer was set (buffer is assigned immediately before start()); (c) music fade-out pause guard (A→B→C); per-page gate/skipPushIn moved from Director into the Reading object; TITLE_SPREAD and nearestPage helpers; revisited pages zeroed on turn start so they arrive blank and re-ink; one character-index home (pages.ts now uses blockStarts from content/book.ts); timeOf moved to content/narration-timing.ts with tests; flick velocity ignored after a 90 ms pause; cached picture grain/leather/endpaper; group.localToWorld instead of updateMatrixWorld; cards re-laid out only on size change; turn hint placed/animated only while shown; push-in texture disposed after use. Check that these fixes are correct and complete and introduce no new defects (e.g. a reading that can stall, double narration, a gate that never resolves, broken disposal of shared textures — the endpaper material and cover texture are intentionally shared and never disposed; the cinema texture is now disposed after each push-in). Do NOT re-raise these dispositioned items: scripts/narration.ts pageText duplicate (rejected, closed audio pipeline); director.ts size; boot() lacking a top-level catch; import.meta.env making surfaces/director untestable under node --test; phone-landscape small text (open item); ticker tweens not cancellable by design (callers check a token). Verification already run: npm run verify (typecheck + 17 tests) green, vite build green, headless-Chromium walkthrough in self-read and narrated modes with zero console errors.",
+  "preset": "code",
+  "model": {
+    "provider": "anthropic",
+    "id": "claude-opus-5-5",
+    "thinkingLevel": "high"
+  },
+  "startedAt": "2026-10-03T16:17:49.819Z",
+  "finishedAt": "2026-10-03T16:21:58.396Z",
+  "elapsedMs": 248574,
+  "folder": "docs/reviews/2026-10-03-101749-re-review-round-2-of-fixes-to-the-reader-engine-of-water-bor-4d41777a",
+  "summaryPath": "docs/reviews/2026-10-03-101749-re-review-round-2-of-fixes-to-the-reader-engine-of-water-bor-4d41777a/00-summary.md",
+  "rows": [
+    {
+      "index": 0,
+      "scope": "logic-and-edge-cases",
+      "status": "complete",
+      "runId": "f0341d40-abce-42d0-bb16-f3d10f06dada",
+      "elapsedMs": 248569,
+      "activity": {
+        "fileReads": 8,
+        "distinctFiles": 8,
+        "codeSearches": 8,
+        "gitCommands": 5,
+        "contextPercent": 9.1953,
+        "peakContextPercent": 9.1953
+      },
+      "usage": {
+        "totalTokens": 1251708,
+        "costUsd": 1.2584006
+      },
+      "findingCount": 4,
+      "severityCounts": {
+        "minor": 3,
+        "info": 1
+      },
+      "reportPath": "docs/reviews/2026-10-03-101749-re-review-round-2-of-fixes-to-the-reader-engine-of-water-bor-4d41777a/01-logic-and-edge-cases.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "src/director.ts:417",
+          "issue": "setVoice only handles 'voice'/'timed'; a reading still in 'intro' during the first narration load stays blank with taps swallowed (as skipPushIn) until the in-flight timing/mp3 request settles when voice is turned off, and an off->on toggle during playNarration's load leaves the page in silent 'timed' mode while the HUD shows narration on.",
+          "fix": "Record that the push-in has finished (a flag on Reading), then let setVoice(false) move such an 'intro' reading straight to 'timed' and setVoice(true) leave the in-flight speak alone or restart it."
+        },
+        {
+          "severity": "minor",
+          "location": "src/content/narration-timing.ts:9",
+          "issue": "spokenChars' JSDoc is left orphaned directly above timeOf's JSDoc; spokenChars (line 21) is now undocumented.",
+          "fix": "Move the line-9 comment to sit directly above export function spokenChars."
+        },
+        {
+          "severity": "minor",
+          "location": "src/styles.css:148",
+          "issue": "With the ping animation only on .turn-hint.on, removing .on cancels the animation at once, so the hint snaps to a static scale-1, 0.7-alpha ring for its 0.5 s opacity fade (it previously faded mid-ping).",
+          "fix": "Keep animation on .turn-hint with animation-play-state: paused, and set running on .on, or accept the pop."
+        },
+        {
+          "severity": "info",
+          "location": "src/engine/cinema.ts:46",
+          "issue": "Disposing the push-in texture after play is safe even if two plays overlap: the map===tex guard keeps a newer map. The shared endpaper/cover materials sit on rigid leaf 0 and the back board, which refreshWindow never disposes.",
+          "fix": "No action."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "scope": "readability-and-maintainability",
+      "status": "complete",
+      "runId": "7f7c3179-dbe7-437f-9eff-a10762cba898",
+      "elapsedMs": 148608,
+      "activity": {
+        "fileReads": 13,
+        "distinctFiles": 10,
+        "codeSearches": 5,
+        "gitCommands": 3,
+        "contextPercent": 8.3581,
+        "peakContextPercent": 8.3581
+      },
+      "usage": {
+        "totalTokens": 830822,
+        "costUsd": 0.9421212000000001
+      },
+      "findingCount": 3,
+      "severityCounts": {
+        "minor": 3
+      },
+      "reportPath": "docs/reviews/2026-10-03-101749-re-review-round-2-of-fixes-to-the-reader-engine-of-water-bor-4d41777a/02-readability-and-maintainability.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "src/content/narration-timing.ts:9",
+          "issue": "timeOf was inserted between spokenChars and its JSDoc; line 9's 'How many characters of a block have been spoken by time t' now sits above timeOf's own JSDoc, and spokenChars (line 21) is undocumented.",
+          "fix": "Move the line-9 comment to directly above `export function spokenChars`."
+        },
+        {
+          "severity": "minor",
+          "location": "src/engine/cinema.ts:28",
+          "issue": "Each play() now disposes its own texture after fade-out (lines 46-48), so the leading `this.mesh.material.map?.dispose()` is redundant; it could only act during an overlapping play, where it would free a texture still on screen. Two disposal sites for one texture.",
+          "fix": "Delete line 28; keep the end-of-play dispose as the single owner."
+        },
+        {
+          "severity": "minor",
+          "location": "src/engine/book3d.ts:65",
+          "issue": "edgeTexture() still hand-rolls createElement('canvas') + getContext('2d')!, duplicating the canvas() helper this commit exported from pages.ts and adopted in backdrop.ts and reflection.ts; it also skips the helper's null-context throw.",
+          "fix": "Use `const [c, ctx] = canvas(8, 64);` imported from './pages.ts' (no import cycle)."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "scope": "error-handling-and-resilience",
+      "status": "complete",
+      "runId": "8c9d6f24-d165-42c8-867b-585e770a6d11",
+      "elapsedMs": 178864,
+      "activity": {
+        "fileReads": 13,
+        "distinctFiles": 10,
+        "codeSearches": 4,
+        "gitCommands": 5,
+        "contextPercent": 7.9082,
+        "peakContextPercent": 7.9082
+      },
+      "usage": {
+        "totalTokens": 898550,
+        "costUsd": 0.9599059999999999
+      },
+      "findingCount": 2,
+      "severityCounts": {
+        "minor": 2
+      },
+      "reportPath": "docs/reviews/2026-10-03-101749-re-review-round-2-of-fixes-to-the-reader-engine-of-water-bor-4d41777a/03-error-handling-and-resilience.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "src/director.ts:353",
+          "issue": "Turning narration off then on while the page's first clip loads: setVoice(true) (director.ts:424) skips because mode is 'intro', playNarration returns undefined (superseded by the off), and the finally fallback sets 'timed', so the page reads silently while the HUD shows narration on; the toggle-on is lost for that page.",
+          "fix": "In the finally fallback, after setting r.mode = 'timed', add `if (this.voice && !r.gate) void this.speak(r, Math.floor(r.clock));`. It cannot loop: failures set 'timed' in catch first, and each supersession needs another user toggle."
+        },
+        {
+          "severity": "minor",
+          "location": "src/audio/mixer.ts:128",
+          "issue": "The fade-out pause timer only checks `this.currentMusic !== oldId`, not whether it is still the latest timer for that track. With A->B->A->B inside 4 s, the first timer pauses A while A is still fading from the last switch, cutting it at audible volume.",
+          "fix": "Keep one pending pause timer per track: clearTimeout the track's earlier timer before scheduling a new one and when the track is restarted (one mutable pauseTimer field on Track)."
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "scopes": 3,
+    "running": 0,
+    "finished": 3,
+    "findings": 9,
+    "severityCounts": {
+      "minor": 8,
+      "info": 1
+    }
+  }
+}

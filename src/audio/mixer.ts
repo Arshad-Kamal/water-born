@@ -15,6 +15,8 @@ interface Loop {
 interface Track {
   readonly el: HTMLAudioElement;
   readonly gain: GainNode;
+  /** Pending pause after a fade-out; one per track so a quick back-and-forth never cuts it early. */
+  pauseTimer?: ReturnType<typeof setTimeout>;
 }
 
 export class Mixer {
@@ -124,10 +126,8 @@ export class Mixer {
     const old = oldId ? this.tracks.get(oldId) : undefined;
     if (old) {
       old.gain.gain.setTargetAtTime(0, now, 0.8);
-      // Pause once faded, unless the reader has come back to this music meanwhile.
-      setTimeout(() => {
-        if (this.currentMusic !== oldId) old.el.pause();
-      }, 4000);
+      clearTimeout(old.pauseTimer);
+      old.pauseTimer = setTimeout(() => old.el.pause(), 4000);
     }
     this.currentMusic = id;
     let track = this.tracks.get(id);
@@ -141,6 +141,7 @@ export class Mixer {
       track = { el, gain };
       this.tracks.set(id, track);
     }
+    clearTimeout(track.pauseTimer);
     track.el.currentTime = 0;
     if (!this.paused) track.el.play().catch((e: unknown) => console.warn('music', id, e));
     track.gain.gain.cancelScheduledValues(now);

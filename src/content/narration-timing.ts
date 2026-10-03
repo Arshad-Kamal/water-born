@@ -6,7 +6,6 @@ export interface NarrationTiming {
   readonly blocks: ReadonlyArray<{ readonly at: readonly number[] }>;
 }
 
-/** How many characters of a block have been spoken by time `t` (seconds into the clip). */
 /**
  * Seconds into the clip at which character `index` of the page is spoken. `starts` are the
  * blocks' start indices in the page text; an index past a block's end clamps to its last character.
@@ -18,6 +17,7 @@ export function timeOf(timing: NarrationTiming, starts: readonly number[], index
   return at[Math.min(Math.max(index - starts[block]!, 0), at.length - 1)] ?? 0;
 }
 
+/** How many characters of a block have been spoken by time `t` (seconds into the clip). */
 export function spokenChars(at: readonly number[], t: number): number {
   let lo = 0;
   let hi = at.length;

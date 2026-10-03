@@ -358,8 +358,12 @@ export class Director {
       if (r === this.reading) r.mode = 'timed';
     } finally {
       r.resuming = false;
-      // Narration turned off or failed before it began: a page still on screen reads at pace.
-      if (r === this.reading && r.mode === 'intro') r.mode = 'timed';
+      // Narration turned off before it began: a page still on screen reads at pace, and if it
+      // was turned back on meanwhile, the narrator starts again (a failure already set 'timed').
+      if (r === this.reading && r.mode === 'intro') {
+        r.mode = 'timed';
+        if (this.voice && !r.gate) void this.speak(r, Math.floor(r.clock));
+      }
     }
   }
 

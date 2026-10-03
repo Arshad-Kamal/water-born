@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { canvas } from './pages.ts';
 import { easeInOutCubic } from './ticker.ts';
 
 export const PAGE_W = 1;
@@ -63,10 +64,7 @@ const curlWeights = Array.from({ length: SEGMENTS + 1 }, (_, i) => (i === 0 ? 0 
 const curlSum = curlWeights.reduce((a, b) => a + b, 0);
 
 function edgeTexture(): THREE.CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = 8;
-  c.height = 64;
-  const ctx = c.getContext('2d')!;
+  const [c, ctx] = canvas(8, 64);
   for (let y = 0; y < 64; y++) {
     ctx.fillStyle = y % 2 ? '#e6d4ae' : '#cdb68b';
     ctx.fillRect(0, y, 8, 1);

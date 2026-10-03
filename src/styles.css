@@ -144,8 +144,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* ---------- turn hint ---------- */
 .turn-hint { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; pointer-events: none;
-  box-shadow: 0 0 0 2px rgba(127, 219, 231, 0.7); opacity: 0; transition: opacity 0.5s; }
-.turn-hint.on { opacity: 1; animation: ping 1.8s ease-out infinite; }
+  box-shadow: 0 0 0 2px rgba(127, 219, 231, 0.7); opacity: 0; transition: opacity 0.5s;
+  animation: ping 1.8s ease-out infinite paused; }
+.turn-hint.on { opacity: 1; animation-play-state: running; }
 @keyframes ping { 0% { transform: scale(0.5); box-shadow: 0 0 0 2px rgba(127, 219, 231, 0.8); } 100% { transform: scale(1.6); box-shadow: 0 0 0 2px rgba(127, 219, 231, 0); } }
 
 @media (prefers-reduced-motion: reduce) {
