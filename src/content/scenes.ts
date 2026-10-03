@@ -96,7 +96,7 @@ export const SCENES: Readonly<Record<string, Scene>> = {
   },
 };
 
-/** The words on the vine-leap page the reader taps to count, in order. Reading pauses at each one. */
+/** The words on the vine-leap page counted on the drops, in order. Self-reading pauses at each one for a tap; narrated, each counts itself as it is spoken. */
 export const COUNT_WORDS = ['One', 'Two', 'three'] as const;
 
 /** Picture name of a hero's card (built from the character sheets by scripts/build-art.ts). */

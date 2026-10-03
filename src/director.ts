@@ -49,7 +49,7 @@ interface Mark {
   readonly index: number;
   /** `silent` when the reader skipped ahead: apply the state, skip sound and spectacle. */
   run(silent: boolean): void;
-  /** Present for marks that pause the reading until a tap (or a timeout) resolves them. */
+  /** Present for marks that pause self-reading until a tap (or a timeout) resolves them; narrated, they resolve at once. */
   readonly resolve?: (silent: boolean) => void;
 }
 
@@ -391,10 +391,12 @@ export class Director {
       if (!mark.resolve) continue;
       if (silent) {
         mark.resolve(true);
+      } else if (r.mode === 'voice') {
+        // Read to me never waits on the reader: the interaction plays itself as the word is spoken.
+        mark.resolve(false);
       } else {
         r.clock = mark.index;
         r.gate = { mark, elapsed: 0 };
-        if (r.mode === 'voice') this.p.mixer.stopNarration();
       }
     }
   }
