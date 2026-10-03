@@ -6,7 +6,8 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 ## Status (overwrite in place, max 6 lines)
 - Done: step 1; step 2 audio smoke (pass) and book mechanics smoke (`spikes/book-proto`, gitignored: skinned page curl, canvas text + shader ink reveal, bloom, embers, Web Audio sync all work in headless Chromium).
 - Open from step 2: real-device fps on the reading device; spike lessons: body text needs ~85px+ on a 1536px page and a less oblique camera.
-- Step 3 done: style A (painted); 7 character sheets in `assets-in/char-*.jpg`, consistent with the art bible. Next: round 3 scene prompts + step 4 mockup.
+- Step 3 done (style A painted, 7 sheets). Round 3 prompts written (26 images, batches A–D in `asset-prompts.md`); Arshad generating, batch A first.
+- Now: step 4 mockup (start screen + one spread) from `style-a-painted.jpg` (p03 art).
 - iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02). Spike preview server stopped.
 
 ## Decisions (Arshad, 2026-10-02)
@@ -18,6 +19,7 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 - Hosting: GitHub Pages, public repo under `Arshad-Kamal`, GitHub Actions deploy, at `arshad-kamal.github.io/<repo>`.
 - Music: ElevenLabs Music API (`music_v2_5`), available on Arshad's pay-as-you-go plan.
 - Interactions are optional; each auto-resolves after a few seconds so reading never stalls.
+- p09 character cards are cropped from the round 2 sheets (no extra prompts); regenerate as dedicated portraits only if they look soft.
 - Pages are 2:3 portrait to match ChatGPT's 1024×1536 output (spike used 3:4); push-in scenes also get a 3:2 wide. Raw art lands in gitignored `assets-in/`; optimised WebP gets committed.
 
 ## Architecture
