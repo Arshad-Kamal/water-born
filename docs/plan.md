@@ -25,7 +25,7 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 - "Read to me" turns pages by itself 2.5 s after a page's narration ends (title spread after 3 s); "I'll read myself" never auto-turns. Pause stops both.
 - Tap on the right page first completes the words (self-read jumps ahead silently: skipped cues keep their state but make no sound; with narration the text shows at once and the narrator carries on), then turns. Left page turns back. Arrow keys / Space / PageUp/Down turn.
 - p13 count gates reading before each of One / Two / three (narration pauses, resumes just before the word); each gate resolves on tap or after 4 s. p09 cards slide out at "Let me introduce ourselves." and light as each name is spoken; "Oh wait..." freeze-frames to sepia and holds the music until the page turns. p16 fires can be tapped out; any left go out at "we put out the last fire".
-- Push-ins play only when that page's painting exists (wide preferred); a tap skips one.
+- Push-ins play only when that page's painting exists (wide preferred); a tap skips one. The painting fills the band between the letterbox bars and pans across whatever the screen crops (left to right on narrow screens, top to bottom otherwise); the shot lengthens with the hidden share (5.5 s × (2 − shown), ~9 s on a portrait phone).
 - Backdrop = the spread's own painting blurred; cover/title/credits prefer the chapter plate, dimmer.
 - Start screen: closed book with its cover mirrored below (fades on start). Neutral tone mapping (ACES dulled the paintings); printed surfaces carry a 0.28 light-independent glow so parchment reads as parchment in every grade; bloom threshold 0.95 keeps paper out of bloom.
 
