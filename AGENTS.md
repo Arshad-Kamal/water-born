@@ -174,6 +174,9 @@ Versions and API facts: `docs/stack-notes.md`.
 - Audio: `npm run audio:gen -- <narration|sfx|music|all> [id]` (spends ElevenLabs
   credits; skips existing files), then `npm run audio:master` (free, rebuilds
   `public/audio/`).
+- Deploy: push to `main` on `Arshad-Kamal/water-born`; `.github/workflows/pages.yml`
+  runs verify + build and publishes `dist/` to https://arshad-kamal.github.io/water-born/.
+  The repo is public: check every commit for private details before pushing.
 
 Don't start long-running or hanging processes (dev servers, watchers, REPLs)
 unless asked.

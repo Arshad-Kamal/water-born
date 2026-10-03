@@ -25,3 +25,4 @@
 ## Hosting (verified 2026-10-02)
 - GitHub Pages: free for public repos; site ≤ 1 GB; soft 100 GB/month bandwidth; Actions deploy avoids the 10 builds/hour soft limit. `gh` logged in as `Arshad-Kamal`.
 - Cloudflare Pages free (fallback): 20,000 files, 25 MiB per file.
+- Deployed 2026-10-03: repo `Arshad-Kamal/water-born` (public), Pages `build_type=workflow` (enabled via `gh api -X POST repos/.../pages -f build_type=workflow`). Action majors at that date: checkout@v7, setup-node@v7, upload-pages-artifact@v5, deploy-pages@v5 (configure-pages@v6 not needed with Vite `base: './'`). First run ~1 min. `ubuntu-latest` moves to Ubuntu 26 from 2026-10-19 (runner notice).

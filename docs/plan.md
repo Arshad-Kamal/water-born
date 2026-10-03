@@ -4,10 +4,10 @@
 Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D book whose scenes spill out of the pages (light, particles, sound, camera). Story words stay verbatim; everything else (art, sound, effects, pacing) is creative liberty.
 
 ## Status (overwrite in place, max 6 lines)
-- Done: steps 1–6, 8. Step 7 engine wired end to end (2026-10-03): verify + build green, render-checked at 1280×800 and 844×390 in headless Chromium (GPU), self-read and narrated modes. Engine review loop closed (2 rounds).
+- Done: steps 1–8, 10. Live at https://arshad-kamal.github.io/water-born/ (2026-10-03): Actions run green, live smoke (narrated, 3 pages, 1280×800, GPU headless) loads art + narration, zero console/HTTP errors. Private-detail line scrubbed from all history before the first push. Step 7 engine wired end to end (2026-10-03): verify + build green, render-checked at 1280×800 and 844×390 in headless Chromium (GPU), self-read and narrated modes. Engine review loop closed (2 rounds).
 - Art: all 26 round 3 images in `public/art/` (32 WebP incl. 5 hero cards); start screen checked against mockup v1 with plate-ch1.
 - Open: phone landscape body text renders ~9px (frame the text page larger on small screens).
-- Next: step 10 deploy (ask Arshad before creating/pushing the repo), then iPad fps check on the deployed URL (deferred to first deploy, Arshad 2026-10-02).
+- Next: iPad fps check on the live URL with Arshad, then step 9 (real-device test with James).
 
 ## Decisions (Arshad, 2026-10-02)
 - Experience: 3D book + atmosphere spilling out + 4 camera push-ins (pages p05, p06, p12, p17).
@@ -77,7 +77,7 @@ Plus: cover, title page ("Story by James"), back cover with credits.
 7. [x] Reader engine: book, page turn, text reveal, audio, FX system, interactions, push-ins, settings, preload. (Real-device test with James is step 9.)
 8. [x] Integrate assets (`npm run art:build` → `public/art/` WebP + manifest).
 9. [ ] Verify: verbatim test, typecheck, build, render-local screenshots, independent review, real-device test with James.
-10. [ ] Deploy: GitHub repo + Actions → Pages.
+10. [x] Deploy: GitHub repo + Actions → Pages (`.github/workflows/pages.yml`).
 
 ## Review dispositions
 - Audio pipeline review (`docs/reviews/2026-10-03-091138-*`, range 5d2660f..2c72c55). Fixed: alimiter delay/dynamics (loops + music now peak-capped static gain; narration/one-shots keep a `latency=true` limiter), stale comments, ENOENT handling, `%20` paths in logs, weak timing/throws/boundary tests, new test that committed timings match `book.ts`. Rejected: alignment-before-mp3 write order (two local sync writes, no realistic credit risk); duplicated `buildNarrationInput(..., DIRECTION[id] ?? [])` call in two scripts (two call sites, no abstraction yet); `readdirSync` id derivation and the two `loop` narrowings (clear enough); UTF-16 offset assumption (story text is ASCII and `toTiming` rejects any mismatch). Re-review of logic (`2026-10-03-091623-*`): info only (encoder overshoot can nudge a capped peak just past -1 dBTP, still < 0 dBFS; no change). All audio review categories closed.
