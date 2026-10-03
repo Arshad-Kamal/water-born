@@ -74,7 +74,7 @@ Plus: cover, title page ("Story by James"), back cover with credits.
 4. [x] Design-sandbox mockup: start screen + one spread → Arshad approves.
 5. [x] Audio: pick voice → narration with timings → SFX → ambience loops → music.
 6. [x] Remaining scene prompts (`docs/asset-prompts.md`); Arshad generated round 3 into `assets-in/`.
-7. [ ] Reader engine: book, page turn, text reveal, audio, FX system, interactions, push-ins, settings, preload. (Built, render-checked, reviewed; real-device test with James is step 9.)
+7. [x] Reader engine: book, page turn, text reveal, audio, FX system, interactions, push-ins, settings, preload. (Real-device test with James is step 9.)
 8. [x] Integrate assets (`npm run art:build` → `public/art/` WebP + manifest).
 9. [ ] Verify: verbatim test, typecheck, build, render-local screenshots, independent review, real-device test with James.
 10. [ ] Deploy: GitHub repo + Actions → Pages.
