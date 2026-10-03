@@ -4,9 +4,10 @@
 Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D book whose scenes spill out of the pages (light, particles, sound, camera). Story words stay verbatim; everything else (art, sound, effects, pacing) is creative liberty.
 
 ## Status (overwrite in place, max 6 lines)
-- Done: step 1 (setup, verbatim source, pagination, word-for-word test green).
-- Next: step 2 smokes (ElevenLabs tier/credits + one timed `eleven_v4` clip + one SFX; Three.js page-bend + canvas-text prototype for Arshad to open on the reading device).
-- Waiting on Arshad: nothing.
+- Done: step 1; step 2 audio smoke (pass) and book mechanics smoke (`spikes/book-proto`, gitignored: skinned page curl, canvas text + shader ink reveal, bloom, embers, Web Audio sync all work in headless Chromium).
+- Open from step 2: real-device fps on the reading device; spike lessons: body text needs ~85px+ on a 1536px page and a less oblique camera.
+- Step 3 round 1 ready: `art-bible.md` + style tests A/B/C in `asset-prompts.md`. Waiting on Arshad: 3 images in `assets-in/`, James's style pick, James's OK on the character roster.
+- iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02).
 
 ## Decisions (Arshad, 2026-10-02)
 - Experience: 3D book + atmosphere spilling out + 4 camera push-ins (pages p05, p06, p12, p17).
@@ -17,6 +18,7 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 - Hosting: GitHub Pages, public repo under `Arshad-Kamal`, GitHub Actions deploy, at `arshad-kamal.github.io/<repo>`.
 - Music: ElevenLabs Music API (`music_v2_5`), available on Arshad's pay-as-you-go plan.
 - Interactions are optional; each auto-resolves after a few seconds so reading never stalls.
+- Pages are 2:3 portrait to match ChatGPT's 1024×1536 output (spike used 3:4); push-in scenes also get a 3:2 wide. Raw art lands in gitignored `assets-in/`; optimised WebP gets committed.
 
 ## Architecture
 - Vite + TypeScript + Three.js (pages = skinned bending meshes, page content drawn to canvas textures), GSAP timelines, Howler.js audio. Vanilla Three over React Three Fiber (fewer parts).

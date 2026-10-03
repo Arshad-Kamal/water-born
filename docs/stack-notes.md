@@ -7,7 +7,10 @@
 
 ## ElevenLabs API (docs read 2026-10-02, elevenlabs.io/docs)
 - Auth header `xi-api-key`; key lives only in `.env` as `ELEVENLABS_API_KEY`.
-- TTS models: `eleven_v4` (flagship, 10,000 char limit, audio tags), `eleven_v3` (5,000), `eleven_multilingual_v2` (10,000). Unverified: whether `eleven_v4` works on the plain TTS `with-timestamps` endpoint (docs say v4 is "available via the Text to Dialogue API"; quickstart uses it with `text_to_speech.convert`). Smoke in step 2.
+- TTS models: `eleven_v4` (flagship, 10,000 char limit, audio tags), `eleven_v3` (5,000), `eleven_multilingual_v2` (10,000).
+- Smoke 2026-10-02: `eleven_v4` works on `with-timestamps` (200). Alignment includes the audio-tag characters at ~0 s (`[tense, urgent] ` = 16 chars, speech starts 0.08 s), so strip the tag prefix length when mapping times to page text. Sentence starts landed at 0.08 / 2.80 / 5.04 s for a 124-char line (7.3 s audio).
+- Arshad's key is scoped: `/v1/user/subscription` (needs `user_read`) and `/v1/models` (`models_read`) return 401; `/v1/voices`, `/v1/shared-voices`, TTS and SFX work. Voice-library voices can be used by `voice_id` directly without adding them to the account.
+- Narrator voice chosen: Valf (`loY1uopAz31XyhAEhNSa`, shared library, "very young, energetic, playful; animation / children's content").
 - `POST /v1/text-to-speech/{voice_id}/with-timestamps` → `{ audio_base64, alignment: { characters[], character_start_times_seconds[], character_end_times_seconds[] }, normalized_alignment }`. Body: `text`, `model_id`, `voice_settings` (`stability`, `similarity_boost`, `style`, `speed` 0.7–1.2), `seed`, `previous_text`/`next_text`.
 - v3/v4 ignore SSML `<break>`; use audio tags (`[whispers]`, `[excited]`, descriptive `[low, tense voice]`) and punctuation (ellipses, CAPS). Tags direct delivery without being spoken, so the story text stays verbatim. Descriptive tags avoid being read as sound-effect cues.
 - Sound effects: `POST /v1/sound-generation`, model `eleven_text_to_sound_v2`, `duration_seconds` 0.5–30, `loop: true` for seamless loops, `prompt_influence` 0–1 (default 0.3). Returns MP3.

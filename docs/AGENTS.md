@@ -21,3 +21,5 @@ Loose files:
 - `plan.md`: approved plan, decisions, scene design table, step checklist, live status.
 - `story-original.md`: verbatim story by James (source of truth).
 - `stack-notes.md`: verified toolchain, ElevenLabs API, and hosting facts with dates.
+- `art-bible.md`: art coherence file (format rules, world, characters, palette). Change it first; prompts derive from it.
+- `asset-prompts.md`: copy-paste ChatGPT prompts by round, with target filenames in `assets-in/` (gitignored raw drop folder).

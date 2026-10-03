@@ -350,3 +350,4 @@ When the user requests a durable behavior change, record it here or in the relev
 
 - `docs/AGENTS.md`: plan, verbatim story source, stack notes.
 - Code (no child doc yet): `src/content/book.ts` (page text + scene slugs), `tests/` (Node test runner).
+- Gitignored working folders: `assets-in/` (raw ChatGPT images from Arshad), `spikes/` (throwaway prototypes, never promoted as-is).
