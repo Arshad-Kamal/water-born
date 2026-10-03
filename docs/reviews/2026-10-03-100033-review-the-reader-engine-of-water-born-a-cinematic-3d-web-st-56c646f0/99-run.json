@@ -1,0 +1,362 @@
+{
+  "batchId": "56c646f0-5f0e-449f-9f13-44cb2d44e0ad",
+  "sessionId": "01a10258-d275-7672-b7e3-24d13aead6fc",
+  "status": "complete",
+  "objective": "Review the reader engine of \"Water Born\", a cinematic 3D web storybook (Vite + …",
+  "objectiveFull": "Review the reader engine of \"Water Born\", a cinematic 3D web storybook (Vite + TypeScript strict + Three.js 0.186 + raw Web Audio, static site for GitHub Pages; laptop/iPad landscape primary, phone landscape secondary). Range 01af7ac..HEAD covers the engine modules (src/engine/*, src/audio/mixer.ts, src/ui/*, src/assets.ts, src/styles.css, index.html) and the wiring added last: src/main.ts (boot), src/director.ts (reading state machine: page turns, ink reveal that follows narration timings or a 16 chars/s reading pace, phrase-anchored scene cues, push-in camera shots, the p09 cards / p13 count gates / p16 fires interactions, auto-turn in narrated mode), src/surfaces.ts (which material each leaf face shows; leaf 0 = hard cover, leaf k+1 = text of page k + picture of page k+1), src/input.ts (tap/drag/keyboard), src/engine/reflection.ts, scripts/build-art.ts (ffmpeg assets-in/* -> public/art/*.webp + manifest.json). Ignore the binary public/art/*.webp files. Context and intent: docs/plan.md (\"Engine decisions\", \"Scene design\", \"Visual direction\") and AGENTS.md. Constraints: story text must stay verbatim (tests enforce); missing art must fall back to placeholders, never fail; audio must start inside the start button's click (iOS); no new dependencies; DRDYK (durable, evidence-based, DRY, YAGNI, KISS) — do not propose speculative machinery. Known and accepted, do not re-raise: phone-landscape body text is small (recorded open item); start-screen backdrop is lighter until plate-ch1 art exists; tweens in ticker.ts are not cancellable by design (callers check a token); the audio pipeline (scripts/gen-audio.ts, master-audio.ts, narration*.ts) was reviewed and closed earlier. Verification already done: npm run verify (typecheck + 15 tests) green, vite build green, headless-Chromium screenshots of start/title/p02/p03/p05 push-in/p09/p13/p16 in both modes, zero console errors.",
+  "preset": "code",
+  "model": {
+    "provider": "anthropic",
+    "id": "claude-opus-5-5",
+    "thinkingLevel": "high"
+  },
+  "startedAt": "2026-10-03T16:00:33.482Z",
+  "finishedAt": "2026-10-03T16:06:41.708Z",
+  "elapsedMs": 368215,
+  "folder": "docs/reviews/2026-10-03-100033-review-the-reader-engine-of-water-born-a-cinematic-3d-web-st-56c646f0",
+  "summaryPath": "docs/reviews/2026-10-03-100033-review-the-reader-engine-of-water-born-a-cinematic-3d-web-st-56c646f0/00-summary.md",
+  "disabledScopes": [
+    "accessibility-and-ux"
+  ],
+  "rows": [
+    {
+      "index": 0,
+      "scope": "logic-and-edge-cases",
+      "status": "complete",
+      "runId": "acc04f5c-b73e-41af-92ec-d42c9a548ef4",
+      "elapsedMs": 368201,
+      "activity": {
+        "fileReads": 17,
+        "distinctFiles": 17,
+        "codeSearches": 8,
+        "gitCommands": 5,
+        "contextPercent": 11.3542,
+        "peakContextPercent": 11.3542
+      },
+      "usage": {
+        "totalTokens": 1448178,
+        "costUsd": 1.8604638000000002
+      },
+      "findingCount": 5,
+      "severityCounts": {
+        "major": 1,
+        "minor": 4
+      },
+      "reportPath": "docs/reviews/2026-10-03-100033-review-the-reader-engine-of-water-born-a-cinematic-3d-web-st-56c646f0/01-logic-and-edge-cases.md",
+      "findings": [
+        {
+          "severity": "major",
+          "location": "src/director.ts:347",
+          "issue": "speak() does not re-check r === this.reading && this.voice after awaiting narrationTiming, so a voice-off toggle or page turn during that fetch still starts the clip (mixer supersede guard bypassed since stopNarration ran first); and its early return at :353 leaves r.mode as 'intro', so a voice toggle during the first load freezes the page (clock never advances, no ink, no auto-turn, taps swallowed by the intro branch at :180).",
+          "fix": "After the timing await add `if (r !== this.reading || !this.voice) return;`, and on bail-out (e.g. in finally) set `if (r === this.reading && r.mode === 'intro') r.mode = 'timed';`."
+        },
+        {
+          "severity": "minor",
+          "location": "src/director.ts:317",
+          "issue": "leavePage (:253) marks the departed page fully revealed; on revisit that fully inked face is visible during the whole turn, then readPage resets reveal to 0 and the text vanishes for a frame before re-inking. First visits turn in blank, so revisits are inconsistent.",
+          "fix": "Zero the destination page's reveal in turnStarted (pageAt(to)) so revisits turn in blank like first visits, or keep already-read pages inked (see open question Q1)."
+        },
+        {
+          "severity": "minor",
+          "location": "src/input.ts:57",
+          "issue": "Flick velocity is only updated on pointermove (:37), so a fast drag that stops and is released later still uses the last fast segment and commits a turn the user abandoned.",
+          "fix": "In release, treat velocity as 0 when e.timeStamp - press.lastT exceeds ~80-100 ms."
+        },
+        {
+          "severity": "minor",
+          "location": "src/audio/mixer.ts:128",
+          "issue": "Fade-out timer skips pausing the old track whenever music has moved on again (A->B->C within 4 s), so track A keeps playing at gain 0 indefinitely (existing code).",
+          "fix": "Capture the old id and skip pausing only when this.currentMusic === oldId."
+        },
+        {
+          "severity": "minor",
+          "location": "src/engine/pages.ts:313",
+          "issue": "layoutTextPage recomputes blockStarts/total and returns them in TextLayout, but nothing reads those fields; book.ts blockStarts() is now the index home, so the two can drift silently.",
+          "fix": "Use blockStarts(page) from content/book.ts inside layoutTextPage and drop the unused TextLayout.total/blockStarts fields."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "scope": "readability-and-maintainability",
+      "status": "complete",
+      "runId": "959a779a-7243-4100-b789-e6945d6777e5",
+      "elapsedMs": 179430,
+      "activity": {
+        "fileReads": 14,
+        "distinctFiles": 9,
+        "codeSearches": 12,
+        "gitCommands": 3,
+        "contextPercent": 8.1093,
+        "peakContextPercent": 8.1093
+      },
+      "usage": {
+        "totalTokens": 965688,
+        "costUsd": 1.1906493999999999
+      },
+      "findingCount": 10,
+      "severityCounts": {
+        "major": 1,
+        "minor": 8,
+        "info": 1
+      },
+      "reportPath": "docs/reviews/2026-10-03-100033-review-the-reader-engine-of-water-born-a-cinematic-3d-web-st-56c646f0/02-readability-and-maintainability.md",
+      "findings": [
+        {
+          "severity": "major",
+          "location": "src/director.ts:352",
+          "issue": "Implicit reading state: mode 'intro' (doc at director.ts:64 says push-in only) also spans the first narration load; if voice is toggled off during that load, speak() returns early without setting a mode and setVoice(false) (director.ts:421-422) only downgrades 'voice', so mode stays 'intro' forever: clock never advances, taps only set skipPushIn, re-enabling voice does nothing.",
+          "fix": "In speak(), when startedAt is undefined or voice is off and r is still the current reading, set r.mode = 'timed' (mirroring the catch branch); correct the 'intro' doc comment to include the narration-loading phase."
+        },
+        {
+          "severity": "minor",
+          "location": "src/engine/pages.ts:120",
+          "issue": "TextLayout.total and TextLayout.blockStarts are computed (pages.ts:313-323) and returned (pages.ts:354) but never read; they are a second home for the character indexing now owned by book.ts blockStarts/pageText, which the ink mask must match exactly.",
+          "fix": "Drop both fields; have layoutTextPage use blockStarts(page)[i] from book.ts instead of re-deriving index += text.length + 1."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/narration.ts:48",
+          "issue": "pageText duplicates the new src/content/book.ts:161 pageText (same join(' ')).",
+          "fix": "Delegate to book.ts pageText (page && pageText(page)) or import it directly in gen-audio.ts."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/build-art.ts:12",
+          "issue": "HEROES restates TEAM's names (src/content/scenes.ts:109), and card-<name> asset naming is built separately here (build-art.ts:42) and in director.ts:498 (which also computes the same name twice in one line).",
+          "fix": "Import TEAM in build-art.ts and derive hero names; in director.ts compute the card name once per member."
+        },
+        {
+          "severity": "minor",
+          "location": "src/director.ts:109",
+          "issue": "sceneForSpread's clamp and showBackdrop's index (director.ts:286) are the same spread-to-nearest-page mapping written two ways.",
+          "fix": "One helper nearestPage(spread) = pageAt(spread) ?? (spread <= TITLE_SPREAD ? 0 : last), used by both."
+        },
+        {
+          "severity": "minor",
+          "location": "src/director.ts:145",
+          "issue": "The title spread is the bare literal 1 at director.ts:145, 160, 164, 247, 274, 286, 436, while surfaces.ts:17 names FIRST_PAGE_SPREAD.",
+          "fix": "Export TITLE_SPREAD = FIRST_PAGE_SPREAD - 1 from surfaces.ts and use it in director.ts."
+        },
+        {
+          "severity": "minor",
+          "location": "src/input.ts:56",
+          "issue": "Drag amount is computed twice with different spellings of the same formula (input.ts:48 and :56).",
+          "fix": "A local turnAmount(press, x) helper used for both drag() and endDrag()."
+        },
+        {
+          "severity": "minor",
+          "location": "src/engine/backdrop.ts:8",
+          "issue": "New canvas2d helper duplicates pages.ts:28 canvas(); reflection.ts:10-13 inlines the same steps (likely duplication).",
+          "fix": "Export pages.ts canvas() and reuse it in backdrop.ts and reflection.ts."
+        },
+        {
+          "severity": "minor",
+          "location": "src/director.ts:130",
+          "issue": "Per-page state (gate, skipPushIn, interactions) lives on the Director instead of Reading, so leavePage (director.ts:250-266) must reset each field and remove each interaction by hand.",
+          "fix": "Move gate and skipPushIn into Reading; remove interactions via Object.values(this.interactions).forEach(i => i.remove()). Best done together with the M1 fix."
+        },
+        {
+          "severity": "info",
+          "location": "src/director.ts:1",
+          "issue": "director.ts is 568 lines covering turning, reading, cues and interactions; sections are cohesive and a split would add a module for little gain.",
+          "fix": "No action."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "scope": "performance-and-scalability",
+      "status": "complete",
+      "runId": "2311b0da-e4f0-414c-9f03-6ea381d8f914",
+      "elapsedMs": 267028,
+      "activity": {
+        "fileReads": 19,
+        "distinctFiles": 19,
+        "codeSearches": 14,
+        "gitCommands": 3,
+        "contextPercent": 12.184000000000001,
+        "peakContextPercent": 12.184000000000001
+      },
+      "usage": {
+        "totalTokens": 1983560,
+        "costUsd": 1.8590506
+      },
+      "findingCount": 6,
+      "severityCounts": {
+        "minor": 6
+      },
+      "reportPath": "docs/reviews/2026-10-03-100033-review-the-reader-engine-of-water-born-a-cinematic-3d-web-st-56c646f0/03-performance-and-scalability.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "src/engine/pages.ts:376",
+          "issue": "artPage runs the deterministic grain() pass (~60,494 fillRects with per-call rgba string parsing + 260 strokes) for every picture face built; surfaces.ts:115 builds one on every turn via book3d.ts:174 refreshWindow(target), on the main thread at the start of the turn animation, and again when paging back.",
+          "fix": "Paint the seed-7/0.6 grain once into a cached transparent canvas (mirroring paperCache) and composite it with globalCompositeOperation='multiply' + a single drawImage."
+        },
+        {
+          "severity": "minor",
+          "location": "src/engine/book3d.ts:144",
+          "issue": "pagePoint/pageUvPoint (lines 144, 150) call group.updateMatrixWorld(), which in three 0.186 recomposes and multiplies matrices for every descendant (~600 objects: 20 skinned leaves x 29 bones); director.ts:548-558 placeOverlays calls them 1-5 times per frame on top of the renderer's own traversal.",
+          "fix": "Use this.group.localToWorld(out.set(...)), which calls updateWorldMatrix(true, false) and updates only the ancestors and the group."
+        },
+        {
+          "severity": "minor",
+          "location": "src/surfaces.ts:79",
+          "issue": "endpaperMaterial() is called twice at boot (main.ts:60 for the back board, surfaces.ts:102 for leaf 0's back), painting two identical 1024x1536 canvases with a 60k-rect grain pass each and holding two ~8 MB textures for the session; leather() is likewise painted twice (surfaces.ts:73, pages.ts:501).",
+          "fix": "Memoize the endpaper material promise like coverTexture()/coverMap and drop `owned` (it is shared and never disposed); optionally cache leather() like paper()."
+        },
+        {
+          "severity": "minor",
+          "location": "src/ui/overlays.ts:53",
+          "issue": "Cards.place sets --w/--x/--y/--r on 5 cards every frame; --w drives width/height (layout), --x/--y restart the 0.7s transform transition, and lit cards repaint 50px box-shadows. Whenever width/3.1 < 170 (iPad/phone), camera breathing changes the values every frame.",
+          "fix": "Round cardW to whole pixels and return early when it equals the last value; keep the transform-only root translate per frame."
+        },
+        {
+          "severity": "minor",
+          "location": "src/director.ts:558",
+          "issue": "The turn hint's left/top are written every frame for the whole session, and its infinite `ping` animation (box-shadow keyframes, not compositor-animatable; styles.css:146-147) keeps running while the hint sits at opacity 0.",
+          "fix": "Run the animation only on .turn-hint.on (or pause it on the base rule) and place the hint only while it is on."
+        },
+        {
+          "severity": "minor",
+          "location": "src/engine/cinema.ts:45",
+          "issue": "After a push-in fades out, the full-frame texture (up to 1920-wide plus mipmaps, ~11 MB) stays on the GPU until the next push-in, or for the rest of the session after the last one.",
+          "fix": "After hiding the mesh, call this.mesh.material.map?.dispose() and set map = null."
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "scope": "error-handling-and-resilience",
+      "status": "complete",
+      "runId": "4bb7c736-ad2c-48b2-89a8-dd3e8be5f1e5",
+      "elapsedMs": 319540,
+      "activity": {
+        "fileReads": 16,
+        "distinctFiles": 16,
+        "codeSearches": 6,
+        "gitCommands": 4,
+        "contextPercent": 10.9137,
+        "peakContextPercent": 10.9137
+      },
+      "usage": {
+        "totalTokens": 1163426,
+        "costUsd": 1.6801688000000001
+      },
+      "findingCount": 5,
+      "severityCounts": {
+        "major": 2,
+        "minor": 2,
+        "info": 1
+      },
+      "reportPath": "docs/reviews/2026-10-03-100033-review-the-reader-engine-of-water-born-a-cinematic-3d-web-st-56c646f0/04-error-handling-and-resilience.md",
+      "findings": [
+        {
+          "severity": "major",
+          "location": "src/audio/mixer.ts:94",
+          "issue": "setAmbience stops loop sources that may never have been started (start() runs only after the buffer loads); stop-before-start throws InvalidStateError, loops.delete is skipped, and the throw propagates out of Book.turnTo's onTurnStart (book3d.ts:165) before leaf targets are set, aborting the turn after Director.turnStarted already cleared the reading. Repeats on every retry while loading, and forever if the load failed.",
+          "fix": "Delete the entry before stopping and only stop a started source: `this.loops.delete(id); if (loop.src.buffer) loop.src.stop(now + 3);`"
+        },
+        {
+          "severity": "major",
+          "location": "src/director.ts:350",
+          "issue": "speak() never re-checks reading/voice between the uncached narrationTiming await and playNarration, so a voice-off toggle or page turn during that fetch still starts narration (plays with voice off or over the next page). A voice-off during the first speak also leaves r.mode as 'intro' (setVoice at :422 only converts 'voice'), so the page never inks or completes and tap() (:180) swallows every tap.",
+          "fix": "After line 350 add `if (r !== this.reading || !this.voice) return;` and in setVoice(false) use `if (r && (r.mode === 'voice' || r.resuming)) r.mode = 'timed';`."
+        },
+        {
+          "severity": "minor",
+          "location": "src/audio/mixer.ts:128",
+          "issue": "Deferred music pause guard `this.currentMusic !== id || el === this.tracks.get(id)?.el` skips pausing the outgoing element whenever music changes again within 4 s (A->B->C), leaving A's HTMLAudioElement looping muted indefinitely (also not paused by setPaused).",
+          "fix": "Capture `const oldId = this.currentMusic;` and in the timeout `if (this.currentMusic !== oldId) el.pause();`."
+        },
+        {
+          "severity": "minor",
+          "location": "src/main.ts:54",
+          "issue": "`.catch(() => undefined)` on mixer.preload is dead: preload returns Promise.allSettled, which never rejects.",
+          "fix": "Use `void mixer.preload(['page-turn', 'book-open']);`."
+        },
+        {
+          "severity": "info",
+          "location": "src/main.ts:90",
+          "issue": "boot() has no top-level catch, so a future rejecting await would leave the loader up forever; all current awaited paths (loadFonts, loadManifest, artImage-based coverTexture) cannot reject.",
+          "fix": "No change needed now."
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "scope": "tests",
+      "status": "complete",
+      "runId": "368bf372-56f4-400f-8188-454babb955a8",
+      "elapsedMs": 180636,
+      "activity": {
+        "fileReads": 10,
+        "distinctFiles": 10,
+        "codeSearches": 11,
+        "gitCommands": 3,
+        "contextPercent": 7.6088000000000005,
+        "peakContextPercent": 7.6088000000000005
+      },
+      "usage": {
+        "totalTokens": 789441,
+        "costUsd": 1.068273
+      },
+      "findingCount": 6,
+      "severityCounts": {
+        "minor": 4,
+        "info": 2
+      },
+      "reportPath": "docs/reviews/2026-10-03-100033-review-the-reader-engine-of-water-born-a-cinematic-3d-web-st-56c646f0/05-tests.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "src/director.ts:353",
+          "issue": "Logic bug in the untested state machine (logic-and-edge-cases scope): setVoice(false) during speak()'s narrationTiming await leaves r.mode 'intro' (setVoice line 422 only converts 'voice'), then speak still calls playNarration and returns on !this.voice without stopping audio or changing mode. The narrator plays with voice off, the clock never advances, and every tap hits the skip-push-in branch at line 180, so the page is stuck until drag, keys or HUD.",
+          "fix": "In speak, re-check `r !== this.reading || !this.voice` after the timing await and before playNarration; when r is still current, set r.mode = 'timed' on that early return."
+        },
+        {
+          "severity": "minor",
+          "location": "src/director.ts:563",
+          "issue": "timeOf (char index to narration clip time, used to resume after each p13 count gate) is untested and lives in a module Node tests cannot import; its clamping and empty-array fallback (which restarts from 0) are untested edge cases.",
+          "fix": "Move timeOf next to spokenChars in src/content/narration-timing.ts and add a case to tests/narration.test.ts (gated word maps to its first char's time; separator index clamps within its block)."
+        },
+        {
+          "severity": "minor",
+          "location": "tests/scenes.test.ts:27",
+          "issue": "The mastered-file test only walks scene-referenced sounds; ids hard-coded in director.ts (card-flip, count-chime, steam-hiss) and main.ts (page-turn, book-open) have no file-existence check, and a missing file would fail silently with a console.warn.",
+          "fix": "Iterate Object.keys(SFX) and Object.keys(MUSIC) and assert each mastered file exists (all 25 SFX present today); drop the near-tautological MUSIC length assert."
+        },
+        {
+          "severity": "minor",
+          "location": "tests/scenes.test.ts:8",
+          "issue": "Anchor tests pick pages by scene name ('team-intro', 'vine-leap', 'last-fire') while director.ts:497-532 anchors by scene.interaction; moving an interaction keeps the tests green while indexOf returns -1 and the mark fires at clock 0.",
+          "fix": "Select the page via SCENES[p.scene].interaction === kind and assert exactly one page carries each interaction."
+        },
+        {
+          "severity": "info",
+          "location": "src/assets.ts:3",
+          "issue": "Top-level import.meta.env.BASE_URL (also src/audio/mixer.ts:4) makes surfaces.ts and director.ts unimportable under node --test, so pageAt, spreadOf and sceneForSpread cannot be unit-tested in place. The leaf mapping was hand-traced and is consistent (leafCount 20, leaf 19 back = credits, pageAt(20) undefined); the last spread was not in the screenshot set.",
+          "fix": "No change proposed now; if the mapping changes, move spreadOf/pageAt into content/book.ts and test them."
+        },
+        {
+          "severity": "info",
+          "location": "src/director.ts:174",
+          "issue": "The director state machine (gates, isDone, auto-turn, voice toggling) has no unit tests; Node-testing it would need heavy mocks, so the headless render smoke is the appropriate primary check. Voice-toggle transitions are exercised by neither, as finding 1 shows.",
+          "fix": "None beyond the targeted extractions above."
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "scopes": 5,
+    "running": 0,
+    "finished": 5,
+    "findings": 32,
+    "severityCounts": {
+      "major": 4,
+      "minor": 24,
+      "info": 4
+    }
+  }
+}

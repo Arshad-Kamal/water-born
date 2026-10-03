@@ -35,7 +35,7 @@ const CINEMATIC_CLASS = 'cinematic';
 const PUSH_IN_SECONDS = 5.5;
 /** Backdrop brightness behind story spreads, and the dimmer one behind cover, title and credits. */
 const STORY_BACKDROP = 0.5;
-const QUIET_BACKDROP = 0.22;
+const QUIET_BACKDROP = 0.34;
 /** Where the fires burn on the last-fire picture (page UV, v up). */
 const FIRE_SPOTS: readonly [number, number][] = [
   [0.24, 0.3],

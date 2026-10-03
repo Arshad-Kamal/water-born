@@ -5,8 +5,8 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 
 ## Status (overwrite in place, max 6 lines)
 - Done: steps 1–6, 8. Step 7 engine wired end to end (2026-10-03): verify + build green, render-checked at 1280×800 and 844×390 in headless Chromium (GPU), self-read and narrated modes. Engine review loop NOT yet run.
-- Art: 25/26 round 3 images in `public/art/` (31 WebP incl. 5 hero cards). Missing: `plate-ch1.jpg` (start/title backdrop falls back to a dimmed p01).
-- Open: phone landscape body text renders ~9px (frame the text page larger on small screens); start backdrop lighter than mockup until plate-ch1 lands.
+- Art: all 26 round 3 images in `public/art/` (32 WebP incl. 5 hero cards); start screen checked against mockup v1 with plate-ch1.
+- Open: phone landscape body text renders ~9px (frame the text page larger on small screens).
 - Next: engine review loop (§ Review dispositions), then step 10 deploy (ask Arshad before creating/pushing the repo), then iPad fps check on the deployed URL (deferred to first deploy, Arshad 2026-10-02).
 
 ## Decisions (Arshad, 2026-10-02)
@@ -73,7 +73,7 @@ Plus: cover, title page ("Story by James"), back cover with credits.
 3. [x] Art round 1: `docs/art-bible.md` (characters, palette) + 3 style-test prompts → James picks → character-sheet prompts.
 4. [x] Design-sandbox mockup: start screen + one spread → Arshad approves.
 5. [x] Audio: pick voice → narration with timings → SFX → ambience loops → music.
-6. [x] Remaining scene prompts (`docs/asset-prompts.md`); Arshad generated round 3 into `assets-in/` (plate-ch1 still missing).
+6. [x] Remaining scene prompts (`docs/asset-prompts.md`); Arshad generated round 3 into `assets-in/`.
 7. [ ] Reader engine: book, page turn, text reveal, audio, FX system, interactions, push-ins, settings, preload. (Built and render-checked; review loop pending.)
 8. [x] Integrate assets (`npm run art:build` → `public/art/` WebP + manifest).
 9. [ ] Verify: verbatim test, typecheck, build, render-local screenshots, independent review, real-device test with James.
