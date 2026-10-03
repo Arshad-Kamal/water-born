@@ -1,7 +1,12 @@
 <!-- 2026-10-02 · Art direction written in session "Water Born 3D storybook" (creative liberty granted by Arshad). Coherence file: every image prompt derives from this. -->
 # Art bible
 
-Status: style NOT chosen yet (James picks from style tests A/B/C in `asset-prompts.md`). Characters below are proposals for James to approve or change.
+Status: style A (painted) chosen by James 2026-10-02. Characters below are proposals until James approves the round 2 sheets.
+
+## Style lock (every prompt; `assets-in/style-a-painted.jpg` is the reference image)
+Rich hand-painted fantasy storybook illustration, gouache and oil textures with visible brushwork and soft painterly edges, light dark outlines on characters, glowing warm light against cool moonlit blues, deep atmosphere, the feel of a classic illustrated adventure novel.
+
+Kyle as painted in the reference (canonical): messy dark-brown hair with one blue streak, sea-blue eyes, light freckles, sleeveless teal wrap tunic, blue wave-pattern sash with trailing ends, white wrapped forearms, dark knee-length trousers, barefoot, nautilus-shell pendant on a cord.
 
 ## Format rules (every image)
 - Page art: portrait 2:3 (ChatGPT 1024×1536). The 3D page is built at 2:3 to match, so nothing is cropped.

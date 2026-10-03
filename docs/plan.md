@@ -6,14 +6,14 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 ## Status (overwrite in place, max 6 lines)
 - Done: step 1; step 2 audio smoke (pass) and book mechanics smoke (`spikes/book-proto`, gitignored: skinned page curl, canvas text + shader ink reveal, bloom, embers, Web Audio sync all work in headless Chromium).
 - Open from step 2: real-device fps on the reading device; spike lessons: body text needs ~85px+ on a 1536px page and a less oblique camera.
-- Step 3 round 1 ready: `art-bible.md` + style tests A/B/C in `asset-prompts.md`. Waiting on Arshad: 3 images in `assets-in/`, James's style pick, James's OK on the character roster.
-- iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02).
+- Step 3: James chose style A (painted); style lock in `art-bible.md`. Round 2 prompts (5 kids, fire soldier, dragon) ready in `asset-prompts.md`. Waiting on Arshad: 7 sheets in `assets-in/` + James's OK on each.
+- iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02). Spike preview server stopped.
 
 ## Decisions (Arshad, 2026-10-02)
 - Experience: 3D book + atmosphere spilling out + 4 camera push-ins (pages p05, p06, p12, p17).
 - Devices: laptop / iPad landscape primary; phone landscape gets a lighter mode.
 - Narration: ElevenLabs, ONE voice only (credits are limited; pay-as-you-go). No auditions: pick from free voice-library previews, generate the full narration once. "Read to me" / "I'll read myself" choice on the start screen.
-- Art: ChatGPT images from prompts we write. James picks one of 3 style tests. Characters: Kyle, Logan, Ruby, Zoro, Flora are all Water tribe kids; looks and powers are our creative call.
+- Art: ChatGPT images from prompts we write. James picked style A, painted storybook (2026-10-02); all prompts run in one ChatGPT chat seeded with `assets-in/style-a-painted.jpg`. Characters: Kyle, Logan, Ruby, Zoro, Flora are all Water tribe kids; looks and powers are our creative call.
 - Text: James's spellings stay ("resistence", "All I can see was", "Lucky I had"). Title page: "Story by James".
 - Hosting: GitHub Pages, public repo under `Arshad-Kamal`, GitHub Actions deploy, at `arshad-kamal.github.io/<repo>`.
 - Music: ElevenLabs Music API (`music_v2_5`), available on Arshad's pay-as-you-go plan.
@@ -51,7 +51,7 @@ Plus: cover, title page ("Story by James"), back cover with credits.
 
 ## Steps
 1. [x] Setup: git, `.gitignore`, `.env`, docs + DOX index, AGENTS.md stack/commands, this plan, `docs/story-original.md`, `src/content/book.ts`, `tests/story-verbatim.test.ts`.
-2. [ ] Smokes: ElevenLabs (subscription/credits, one `with-timestamps` clip on `eleven_v4` with audio tags, one SFX); Three.js page-bend + canvas text prototype checked on the real device.
+2. [x] Smokes (real-device fps deferred to first deploy): ElevenLabs (subscription/credits, one `with-timestamps` clip on `eleven_v4` with audio tags, one SFX); Three.js page-bend + canvas text prototype checked on the real device.
 3. [ ] Art round 1: `docs/art-bible.md` (characters, palette) + 3 style-test prompts → James picks → character-sheet prompts.
 4. [ ] Design-sandbox mockup: start screen + one spread → Arshad approves.
 5. [ ] Audio: pick voice → narration with timings → SFX → ambience loops → music.
