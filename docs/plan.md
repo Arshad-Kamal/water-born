@@ -4,11 +4,11 @@
 Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D book whose scenes spill out of the pages (light, particles, sound, camera). Story words stay verbatim; everything else (art, sound, effects, pacing) is creative liberty.
 
 ## Status (overwrite in place, max 6 lines)
-- Done: step 1; step 2 audio smoke (pass) and book mechanics smoke (`spikes/book-proto`, gitignored: skinned page curl, canvas text + shader ink reveal, bloom, embers, Web Audio sync all work in headless Chromium).
-- Open from step 2: real-device fps on the reading device; spike lessons: body text needs ~85px+ on a 1536px page and a less oblique camera.
-- Step 3 done (style A painted, 7 sheets). Round 3 prompts written (26 images, batches A–D in `asset-prompts.md`); Arshad generating, batch A first.
-- Step 4: mockup v1 saved (`.sayl/sandboxes/reader-spread`, screenshots `docs/mockups/v1-*.webp`). Waiting on Arshad's approval.
-- iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02). Spike preview server stopped.
+- Done: steps 1–5. Mockup v1 approved 2026-10-03. Audio: 18 narration, 25 SFX, 7 music (originals `audio-src/`, mastered `public/audio/`).
+- Spike lessons for the engine: body text ~85px+ on a 1536px page texture; less oblique camera than the spike.
+- Arshad generating round 3 art (26 images, `asset-prompts.md`), batch A first.
+- Now: step 7 reader engine.
+- iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02).
 
 ## Decisions (Arshad, 2026-10-02)
 - Experience: 3D book + atmosphere spilling out + 4 camera push-ins (pages p05, p06, p12, p17).
@@ -31,9 +31,10 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 - HUD: one glass bar: chapter name, 18-segment progress grouped by chapter, narration / pause / contents.
 
 ## Architecture
-- Vite + TypeScript + Three.js (pages = skinned bending meshes, page content drawn to canvas textures), GSAP timelines, Howler.js audio. Vanilla Three over React Three Fiber (fewer parts).
+- Vite + TypeScript + Three.js (pages = skinned bending meshes, page content drawn to canvas textures), raw Web Audio. Vanilla Three over React Three Fiber (fewer parts). Howler.js and GSAP dropped (were planned): Web Audio is needed anyway for the underwater low-pass and sample-accurate narration sync; a small tween helper covers animation.
 - `src/content/book.ts` is the one home for page text + scene slugs (scene cues get added there). Pagination lives there, not here.
-- Audio is generated ahead of time by `scripts/gen-audio.ts` into `public/audio/` (+ narration timing JSON). The API key never ships to the browser or the repo.
+- Audio: `npm run audio:gen -- <narration|sfx|music|all> [id]` writes paid originals once to `audio-src/` (committed, never overwritten); `npm run audio:master` builds `public/audio/` (static gain to LUFS targets: narration -16, SFX -17, loops -26, music -21; plus `narration/<page>.json` per-character timings). Sound list + prompts: `src/content/sound.ts`; narrator tags: `scripts/narration-direction.ts`. The API key never ships to the browser or the repo.
+- Music by mood: theme (cover/p01), attack (p02–p05), sorrow (p06–p07), hope (p08–p10), journey (p11–p14), stealth (p15–p16), victory (p17–p18).
 - Fallback if the 3D book is not smooth/readable on the target device: CSS 3D page flip with the WebGL atmosphere behind it.
 
 ## Scene design (by `scene` slug in book.ts)
@@ -63,8 +64,8 @@ Plus: cover, title page ("Story by James"), back cover with credits.
 1. [x] Setup: git, `.gitignore`, `.env`, docs + DOX index, AGENTS.md stack/commands, this plan, `docs/story-original.md`, `src/content/book.ts`, `tests/story-verbatim.test.ts`.
 2. [x] Smokes (real-device fps deferred to first deploy): ElevenLabs (subscription/credits, one `with-timestamps` clip on `eleven_v4` with audio tags, one SFX); Three.js page-bend + canvas text prototype checked on the real device.
 3. [x] Art round 1: `docs/art-bible.md` (characters, palette) + 3 style-test prompts → James picks → character-sheet prompts.
-4. [ ] Design-sandbox mockup: start screen + one spread → Arshad approves.
-5. [ ] Audio: pick voice → narration with timings → SFX → ambience loops → music.
+4. [x] Design-sandbox mockup: start screen + one spread → Arshad approves.
+5. [x] Audio: pick voice → narration with timings → SFX → ambience loops → music.
 6. [ ] Remaining scene prompts (`docs/asset-prompts.md`); Arshad generates into `assets-in/`.
 7. [ ] Reader engine: book, page turn, text reveal, audio, FX system, interactions, push-ins, settings, preload.
 8. [ ] Integrate assets (image optimisation script → WebP).

@@ -158,16 +158,19 @@ scratch copy, sifting long documents) off the main context; it reports back a
 distilled result.
 
 ## Stack
-Node 24, TypeScript 7 (strict), Node's built-in test runner. Planned and not yet
-installed: Vite, Three.js, GSAP, Howler.js. ElevenLabs API for pre-generated
-audio. Versions and API facts: `docs/stack-notes.md`.
+Node 24, TypeScript 7 (strict), Node's built-in test runner, Vite, Three.js,
+raw Web Audio. ElevenLabs API for pre-generated audio; ffmpeg for mastering.
+Versions and API facts: `docs/stack-notes.md`.
 
 ## Commands
 - Install: `npm install`
 - Test: `npm test`
 - Typecheck: `npm run typecheck`
 - Verify (gate): `npm run verify`
-- Build / run locally: not yet set up (Vite arrives in step 2).
+- Build / run locally: not yet set up (arrives with the reader engine, step 7).
+- Audio: `npm run audio:gen -- <narration|sfx|music|all> [id]` (spends ElevenLabs
+  credits; skips existing files), then `npm run audio:master` (free, rebuilds
+  `public/audio/`).
 
 Don't start long-running or hanging processes (dev servers, watchers, REPLs)
 unless asked.
@@ -349,5 +352,6 @@ When the user requests a durable behavior change, record it here or in the relev
 ## Child DOX Index
 
 - `docs/AGENTS.md`: plan, verbatim story source, stack notes.
-- Code (no child doc yet): `src/content/book.ts` (page text + scene slugs), `tests/` (Node test runner).
+- Code (no child doc yet): `src/content/book.ts` (page text + scene slugs), `src/content/sound.ts` (all SFX/music ids + prompts), `scripts/` (audio generation + mastering), `tests/` (Node test runner).
+- `audio-src/`: paid ElevenLabs originals (committed, never edited or regenerated without Arshad's say-so). `public/audio/` is built from it by `audio:master`.
 - Gitignored working folders: `assets-in/` (raw ChatGPT images from Arshad), `spikes/` (throwaway prototypes, never promoted as-is).
