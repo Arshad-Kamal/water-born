@@ -457,11 +457,18 @@ export function creditsPage(author: string): HTMLCanvasElement {
   centered(ctx, `A story by ${author}`, 620);
   ctx.font = `400 36px ${FONT.body}`;
   ctx.fillStyle = 'rgba(43,29,16,0.75)';
-  const lines = ['Pictures painted with ChatGPT', 'from the world James imagined.', '', 'Narration, music and sound', 'made with ElevenLabs.'];
+  const lines = [
+    'Every story begins as a spark',
+    'in someone\'s imagination.',
+    '',
+    'So keep dreaming, keep drawing,',
+    'keep writing, keep building.',
+    'Never stop creating.',
+  ];
   lines.forEach((line, i) => centered(ctx, line, 780 + i * 56));
   ctx.font = `italic 400 44px ${FONT.body}`;
   ctx.fillStyle = '#0f4a60';
-  centered(ctx, 'For James, who dreamed it up.', 1220);
+  centered(ctx, 'The world is waiting for your story.', 1220);
   return c;
 }
 
