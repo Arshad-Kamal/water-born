@@ -1,4 +1,4 @@
-/** Shape of public/audio/narration/<pageId>.json, written by scripts/gen-audio.ts. */
+/** Shape of public/audio/narration/<pageId>.json, written by scripts/master-audio.ts. */
 export interface NarrationTiming {
   /** Length of the narration clip in seconds. */
   readonly duration: number;

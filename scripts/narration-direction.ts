@@ -1,6 +1,6 @@
 // Delivery direction for the narrator, one audio tag (or '') per block of each page.
 // Tags steer how a line is performed and are not spoken, so the story stays verbatim.
-// tests/narration-direction.test.ts checks every page has exactly one entry per block.
+// tests/narration.test.ts checks every page has exactly one entry per block.
 
 export const DIRECTION: Readonly<Record<string, readonly string[]>> = {
   p01: ['[warm, storyteller voice]', '[softly, drawing the listener in]'],

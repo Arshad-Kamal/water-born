@@ -1,0 +1,326 @@
+{
+  "batchId": "cf455d21-4754-4276-8028-171d43b07bd2",
+  "sessionId": "01a0ff3f-4280-7137-a4f7-77781cb79329",
+  "status": "complete",
+  "objective": "Review the audio generation + mastering pipeline of \"Water Born\", a static web …",
+  "objectiveFull": "Review the audio generation + mastering pipeline of \"Water Born\", a static web storybook (Node 24, TypeScript run directly by Node type stripping). Intent: (1) generate paid ElevenLabs assets ONCE into committed `audio-src/` (narration per page via POST /v1/text-to-speech/{voice}/with-timestamps with model eleven_v4 and audio tags prepended to blocks — story text must stay verbatim; SFX via /v1/sound-generation; music via /v1/music) and never regenerate existing files because credits are limited; (2) `scripts/master-audio.ts` builds `public/audio/` from `audio-src/` with ONE static gain per file to LUFS targets (no dynamic compression so loops stay seamless) and writes per-page narration timing JSON mapping alignment character times onto each block's verbatim text; (3) the ElevenLabs API key lives only in `.env` (gitignored) and must never be logged, committed or shipped. Files: scripts/gen-audio.ts, scripts/master-audio.ts, scripts/narration.ts, scripts/narration-direction.ts, src/content/sound.ts, src/content/narration-timing.ts, tests/narration.test.ts, package.json scripts audio:gen/audio:master. Focus on correctness of the alignment→timing mapping (offsets, tag skipping, separator handling), failure behaviour that could waste paid credits or lose paid output, secret handling, and test adequacy. The binary mp3/json files under audio-src/ and public/audio/ are generated outputs; don't review their contents. Known and accepted: count-chime SFX is quiet (peak -13 dB after mastering), kept to save credits.",
+  "preset": "code",
+  "model": {
+    "provider": "anthropic",
+    "id": "claude-opus-5-5",
+    "thinkingLevel": "high"
+  },
+  "startedAt": "2026-10-03T15:11:38.676Z",
+  "finishedAt": "2026-10-03T15:14:20.855Z",
+  "elapsedMs": 162176,
+  "folder": "docs/reviews/2026-10-03-091138-review-the-audio-generation-mastering-pipeline-of-water-born-cf455d21",
+  "summaryPath": "docs/reviews/2026-10-03-091138-review-the-audio-generation-mastering-pipeline-of-water-born-cf455d21/00-summary.md",
+  "rows": [
+    {
+      "index": 0,
+      "scope": "logic-and-edge-cases",
+      "status": "complete",
+      "runId": "d6c97a74-ca4f-4b82-b818-e9fc6ba34df5",
+      "elapsedMs": 123723,
+      "activity": {
+        "fileReads": 10,
+        "distinctFiles": 10,
+        "codeSearches": 6,
+        "gitCommands": 3,
+        "contextPercent": 4.6351,
+        "peakContextPercent": 4.6351
+      },
+      "usage": {
+        "totalTokens": 270509,
+        "costUsd": 0.6451452
+      },
+      "findingCount": 4,
+      "severityCounts": {
+        "major": 1,
+        "minor": 3
+      },
+      "reportPath": "docs/reviews/2026-10-03-091138-review-the-audio-generation-mastering-pipeline-of-water-born-cf455d21/01-logic-and-edge-cases.md",
+      "findings": [
+        {
+          "severity": "major",
+          "location": "scripts/master-audio.ts:41",
+          "issue": "alimiter is used with ffmpeg's default latency=false, which per the ffmpeg docs delays output by the 5 ms attack lookahead and does not flush the last 5 ms at EOF; every loop file gets a dropout or click at its seam, and the limiter is dynamic gain reduction, against the one-static-gain intent.",
+          "fix": "Append :latency=1 to the alimiter arguments, or omit alimiter for loop and music targets (gain is normally negative there) so mastering is a pure static gain; then check one loop's sample count and seam against its source."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/gen-audio.ts:41",
+          "issue": "The narration skip requires both mp3 and alignment to exist, and the mp3 is written before the alignment (lines 50-51). A crash between the writes, or an undefined data.alignment making writeFileSync throw, leaves only the mp3; the next run pays again and overwrites the paid original, contradicting the 'never regenerated' header.",
+          "fix": "Validate audio_base64 and alignment before writing anything, and skip (or throw asking for manual deletion) when either file exists."
+        },
+        {
+          "severity": "minor",
+          "location": "tests/narration.test.ts:22",
+          "issue": "The timing test checks block 1's length and block 0's first time but never that block 1's first time equals offsets[1]/10, so separator and offset mapping in toTiming is not asserted directly; the empty-tag branch (narration.ts:25) is never exercised.",
+          "fix": "Add assert.equal(timing.blocks[1]!.at[0], input.offsets[1]! / 10) and a case with a '' tag."
+        },
+        {
+          "severity": "minor",
+          "location": "src/content/narration-timing.ts:1",
+          "issue": "The comment says the timing JSON is written by scripts/gen-audio.ts; it is written by scripts/master-audio.ts:73. Also scripts/narration-direction.ts:3 cites tests/narration-direction.test.ts, which does not exist (the check is in tests/narration.test.ts:8).",
+          "fix": "Correct both file references."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "scope": "readability-and-maintainability",
+      "status": "complete",
+      "runId": "2343d1ee-ebcd-4d0f-beae-d5f04f47feef",
+      "elapsedMs": 65569,
+      "activity": {
+        "fileReads": 8,
+        "distinctFiles": 8,
+        "codeSearches": 2,
+        "gitCommands": 3,
+        "contextPercent": 3.5233,
+        "peakContextPercent": 3.5233
+      },
+      "usage": {
+        "totalTokens": 121639,
+        "costUsd": 0.4393414
+      },
+      "findingCount": 7,
+      "severityCounts": {
+        "minor": 7
+      },
+      "reportPath": "docs/reviews/2026-10-03-091138-review-the-audio-generation-mastering-pipeline-of-water-born-cf455d21/02-readability-and-maintainability.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "scripts/narration-direction.ts:3",
+          "issue": "Comment cites tests/narration-direction.test.ts, which does not exist; the per-block direction check lives in tests/narration.test.ts:8-10.",
+          "fix": "Point the comment at tests/narration.test.ts."
+        },
+        {
+          "severity": "minor",
+          "location": "src/content/narration-timing.ts:1",
+          "issue": "Doc comment says the timing JSON is written by scripts/gen-audio.ts; it is written by scripts/master-audio.ts:73 (gen-audio only writes the raw alignment).",
+          "fix": "Change the comment to scripts/master-audio.ts."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/master-audio.ts:72",
+          "issue": "The request-text derivation buildNarrationInput(page, DIRECTION[page.id] ?? []) is duplicated in scripts/gen-audio.ts:42, yet mastering must reproduce exactly what was sent or toTiming throws.",
+          "fix": "Add narrationInputFor(page) to scripts/narration.ts and call it from both scripts."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/master-audio.ts:56-65",
+          "issue": "SFX and music mastering iterates readdirSync(src) and derives the id via string-replace, needing a separate loops Set and a nested ternary for the target; stale originals are shipped and catalogue ids with no original are silently skipped, unlike the narration loop which iterates book.pages.",
+          "fix": "Iterate Object.entries(SFX) and Object.entries(MUSIC) and take the target from spec directly; this drops the Set, the replace and the nested ternary."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/gen-audio.ts:64",
+          "issue": "Loop narrowing is hand-written twice in different forms ('loop' in spec ? spec.loop : false here, 'loop' in spec && spec.loop in master-audio.ts:56), only because Object.entries on an as-const object yields a union.",
+          "fix": "Use Object.entries<SfxSpec>(SFX) so spec.loop ?? false type-checks in both places."
+        },
+        {
+          "severity": "minor",
+          "location": "tests/narration.test.ts:27-28",
+          "issue": "Only block 0's first time is checked against its offset; block 1 gets a length check only, so a separator-length offset error in buildNarrationInput would pass the test.",
+          "fix": "Assert at[0] === offsets[i]/10 and at.length === block.text.length for every block, on a three-block page such as p02."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/master-audio.ts:45",
+          "issue": "Log and error messages (lines 24, 28, 35, 45) use URL pathname, which shows %20 for the space in the project path and relies on splitting at '/audio/', even though a path() helper for decoded filesystem paths exists at line 20; the helper's name also reads like the node:path module.",
+          "fix": "Use the helper in messages and consider renaming it to fsPath."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "scope": "error-handling-and-resilience",
+      "status": "complete",
+      "runId": "089228e6-e115-4a47-9d5c-2064b58385a4",
+      "elapsedMs": 162167,
+      "activity": {
+        "fileReads": 10,
+        "distinctFiles": 10,
+        "codeSearches": 4,
+        "gitCommands": 3,
+        "contextPercent": 5.3964,
+        "peakContextPercent": 5.3964
+      },
+      "usage": {
+        "totalTokens": 300222,
+        "costUsd": 0.7962686000000001
+      },
+      "findingCount": 8,
+      "severityCounts": {
+        "minor": 6,
+        "info": 2
+      },
+      "reportPath": "docs/reviews/2026-10-03-091138-review-the-audio-generation-mastering-pipeline-of-water-born-cf455d21/03-error-handling-and-resilience.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "scripts/gen-audio.ts:40",
+          "issue": "Narration skip requires both mp3 and alignment to exist, and the mp3 is written first (line 50). Any throw after it (e.g. missing alignment makes writeFileSync(file, undefined) throw) leaves a lone mp3; the next run re-bills the page and overwrites the paid mp3, contradicting the never-regenerate contract in lines 1-2.",
+          "fix": "Validate audio_base64 and alignment.characters before writing either file, and skip when either file exists so a half pair fails loudly in audio:master instead of being silently re-billed."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/narration.ts:38",
+          "issue": "toTiming checks only characters.join('') === input.text. Index slicing by UTF-16 offsets also assumes characters.length === text.length and character_start_times_seconds.length === characters.length; a multi-unit entry or short times array would silently shift or truncate the at arrays persisted from external API data.",
+          "fix": "Extend the existing guard to throw when alignment.characters.length !== input.text.length or the times array length differs from characters.length."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/master-audio.ts:24",
+          "issue": "spawnSync launch failure (ENOENT) returns status null and stderr null; the status branch then calls run.stderr.slice and throws a TypeError that masks the real cause.",
+          "fix": "Add `if (run.error) throw run.error;` before the status check."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/master-audio.ts:43",
+          "issue": "The header comment (lines 2-3) says one static gain and never dynamic processing so loops stay seamless, but the filter chain applies alimiter, a dynamic lookahead limiter.",
+          "fix": "Correct the comment to say a safety peak limiter follows the static gain, or drop or adjust the limiter (see open question on latency)."
+        },
+        {
+          "severity": "minor",
+          "location": "tests/narration.test.ts:28",
+          "issue": "The 'skipping tags' timing test asserts the start time only for block 0 and only the length for block 1, so a wrong offset for later blocks (separator + tag prefix) would pass.",
+          "fix": "Assert timing.blocks[i].at[0] === input.offsets[i] / 10 for every block, or deepEqual the full blocks array."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/narration-direction.ts:3",
+          "issue": "Stale comments: this line cites tests/narration-direction.test.ts, which does not exist (check is in tests/narration.test.ts:8); src/content/narration-timing.ts:1 says the JSON is written by gen-audio.ts but master-audio.ts:73 writes it.",
+          "fix": "Point both comments at the real test file and the real writer script."
+        },
+        {
+          "severity": "info",
+          "location": "scripts/gen-audio.ts:19",
+          "issue": "No retry or backoff on paid POSTs; this is correct because a retry could bill twice, and undici's default 300 s timeouts bound a hang.",
+          "fix": "None."
+        },
+        {
+          "severity": "info",
+          "location": "scripts/master-audio.ts:41",
+          "issue": "MAX_GAIN_DB clamp leaves very quiet sources below target without flagging the miss; consistent with the accepted quiet count-chime.",
+          "fix": "None."
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "scope": "appsec",
+      "status": "complete",
+      "runId": "76fe8f64-8cee-4f39-9888-1e29664a6c7b",
+      "elapsedMs": 73045,
+      "activity": {
+        "fileReads": 8,
+        "distinctFiles": 8,
+        "codeSearches": 5,
+        "gitCommands": 4,
+        "contextPercent": 4.4596,
+        "peakContextPercent": 4.4596
+      },
+      "usage": {
+        "totalTokens": 354111,
+        "costUsd": 0.5385964
+      },
+      "findingCount": 2,
+      "severityCounts": {
+        "minor": 2
+      },
+      "reportPath": "docs/reviews/2026-10-03-091138-review-the-audio-generation-mastering-pipeline-of-water-born-cf455d21/04-appsec.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "scripts/narration-direction.ts:3",
+          "issue": "Stale comment (out of security lens, readability): says tests/narration-direction.test.ts checks one direction per block, but that file does not exist; the check lives in tests/narration.test.ts:8-10.",
+          "fix": "Point the comment at tests/narration.test.ts."
+        },
+        {
+          "severity": "minor",
+          "location": "src/content/narration-timing.ts:1",
+          "issue": "Stale comment (out of security lens, readability): says public/audio/narration/<pageId>.json is written by scripts/gen-audio.ts, but scripts/master-audio.ts:73 writes it; gen-audio.ts only writes audio-src/*.alignment.json.",
+          "fix": "Change the comment to name scripts/master-audio.ts."
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "scope": "tests",
+      "status": "complete",
+      "runId": "0e3e3b72-3423-4c40-84a2-5b41e2811156",
+      "elapsedMs": 110408,
+      "activity": {
+        "fileReads": 10,
+        "distinctFiles": 10,
+        "codeSearches": 4,
+        "gitCommands": 5,
+        "contextPercent": 4.2775,
+        "peakContextPercent": 4.2775
+      },
+      "usage": {
+        "totalTokens": 248018,
+        "costUsd": 0.6068574
+      },
+      "findingCount": 6,
+      "severityCounts": {
+        "minor": 5,
+        "info": 1
+      },
+      "reportPath": "docs/reviews/2026-10-03-091138-review-the-audio-generation-mastering-pipeline-of-water-born-cf455d21/05-tests.md",
+      "findings": [
+        {
+          "severity": "minor",
+          "location": "tests/narration.test.ts:27",
+          "issue": "toTiming test asserts only block 1's length and block 0's first time; wrong offsets for blocks after the first (e.g. offsets[0] for all, or a dropped separator) still pass, and the untagged '' branch is never exercised.",
+          "fix": "For every page and block, deepEqual timing.blocks[i].at against (offsets[i]+k)/10 for k in 0..len-1; add a synthetic page with an empty tag."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/master-audio.ts:73",
+          "issue": "No test ties the committed public/audio/narration/*.json or audio-src alignments to book.ts; editorial page/block changes leave stale timings with verify green, and monotonic 'at' (required by the spokenChars binary search) is never checked on real data.",
+          "fix": "Add a credit-free test: for each page, run toTiming on the committed alignment, deepEqual the blocks against the committed public JSON, and assert each 'at' is non-decreasing."
+        },
+        {
+          "severity": "minor",
+          "location": "tests/narration.test.ts:35",
+          "issue": "assert.throws has no matcher, so any exception passes; the ['x'] fixture differs in length and doesn't model a realistic same-length or tags-stripped mismatch.",
+          "fix": "Use assert.throws(fn, /does not match the request text/) with a same-length one-char-different or tag-less fixture."
+        },
+        {
+          "severity": "minor",
+          "location": "tests/narration.test.ts:40",
+          "issue": "spokenChars boundary at t equal to a start time is untested; changing <= to < in narration-timing.ts:15 would not fail any test.",
+          "fix": "Add assert.equal(spokenChars(at, 0.1), 2) and an empty-array case."
+        },
+        {
+          "severity": "minor",
+          "location": "scripts/narration-direction.ts:3",
+          "issue": "Comment cites tests/narration-direction.test.ts, which does not exist; the check is in tests/narration.test.ts:8-10.",
+          "fix": "Point the comment at tests/narration.test.ts."
+        },
+        {
+          "severity": "info",
+          "location": "scripts/gen-audio.ts:40",
+          "issue": "Credit-protection skip logic and master-audio gain/target selection are untested; acceptable given they are one-line checks in side-effecting scripts and tag/block count mismatches throw before any paid call.",
+          "fix": "None required."
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "scopes": 5,
+    "running": 0,
+    "finished": 5,
+    "findings": 27,
+    "severityCounts": {
+      "major": 1,
+      "minor": 23,
+      "info": 3
+    }
+  }
+}

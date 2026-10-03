@@ -72,6 +72,9 @@ Plus: cover, title page ("Story by James"), back cover with credits.
 9. [ ] Verify: verbatim test, typecheck, build, render-local screenshots, independent review, real-device test with James.
 10. [ ] Deploy: GitHub repo + Actions → Pages.
 
+## Review dispositions
+- Audio pipeline review (`docs/reviews/2026-10-03-091138-*`, range 5d2660f..2c72c55). Fixed: alimiter delay/dynamics (loops + music now peak-capped static gain; narration/one-shots keep a `latency=true` limiter), stale comments, ENOENT handling, `%20` paths in logs, weak timing/throws/boundary tests, new test that committed timings match `book.ts`. Rejected: alignment-before-mp3 write order (two local sync writes, no realistic credit risk); duplicated `buildNarrationInput(..., DIRECTION[id] ?? [])` call in two scripts (two call sites, no abstraction yet); `readdirSync` id derivation and the two `loop` narrowings (clear enough); UTF-16 offset assumption (story text is ASCII and `toTiming` rejects any mismatch).
+
 ## Risks
 - 3D text legibility/perf on iPad/phone (step 2 smoke decides; fallback above).
 - ChatGPT character consistency: character sheets first, one ChatGPT conversation, re-upload sheet with each scene prompt.
