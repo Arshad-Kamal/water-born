@@ -1,0 +1,61 @@
+{
+  "batchId": "cdf283fa-c975-4790-b78e-052766475a22",
+  "sessionId": "01a0ff3f-4280-7137-a4f7-77781cb79329",
+  "status": "complete",
+  "objective": "Re-review (logic and edge cases only) of the \"Water Born\" audio mastering fix. …",
+  "objectiveFull": "Re-review (logic and edge cases only) of the \"Water Born\" audio mastering fix. Context: scripts/master-audio.ts builds public/audio/ from paid originals in audio-src/. Intent: loops and music get ONE static gain toward a LUFS target, capped so true peak stays at or below -1 dBTP, with no dynamic processing so seamless loops stay seamless; narration and one-shot SFX (often boosted up to +20 dB) get the static gain plus an alimiter with latency=true (delay-compensated). Narration timing JSON maps ElevenLabs alignment onto each block's verbatim text. Verify the fix of the previous major finding (alimiter default latency=false delayed output 5 ms and was dynamic on loops) is correct and complete, and look for new logic errors in the changed lines (peak parsing incl. -inf, gain clamping order, which files are treated as static-only). Already dispositioned and NOT to be re-raised: write order of alignment vs mp3 in gen-audio.ts (rejected), duplicated buildNarrationInput call in two scripts (rejected), readdirSync id derivation and loop narrowing style (rejected), UTF-16 offset assumption (rejected, text is ASCII and mismatch throws), quiet count-chime (accepted). Mastered durations were checked equal to sources (fire-loop 20.000/20.000, p02 9.84/9.84).",
+  "preset": "code",
+  "model": {
+    "provider": "anthropic",
+    "id": "claude-opus-5-5",
+    "thinkingLevel": "high"
+  },
+  "startedAt": "2026-10-03T15:16:23.395Z",
+  "finishedAt": "2026-10-03T15:18:22.316Z",
+  "elapsedMs": 118918,
+  "folder": "docs/reviews/2026-10-03-091623-re-review-logic-and-edge-cases-only-of-the-water-born-audio-cdf283fa",
+  "summaryPath": "docs/reviews/2026-10-03-091623-re-review-logic-and-edge-cases-only-of-the-water-born-audio-cdf283fa/00-summary.md",
+  "rows": [
+    {
+      "index": 0,
+      "scope": "logic-and-edge-cases",
+      "status": "complete",
+      "runId": "9195cdbd-3dc3-4784-81de-184c557b8176",
+      "elapsedMs": 118913,
+      "activity": {
+        "fileReads": 2,
+        "distinctFiles": 2,
+        "codeSearches": 5,
+        "gitCommands": 4,
+        "contextPercent": 4.5275,
+        "peakContextPercent": 4.5275
+      },
+      "usage": {
+        "totalTokens": 259614,
+        "costUsd": 0.4820534
+      },
+      "findingCount": 1,
+      "severityCounts": {
+        "info": 1
+      },
+      "reportPath": "docs/reviews/2026-10-03-091623-re-review-logic-and-edge-cases-only-of-the-water-born-audio-cdf283fa/01-logic-and-edge-cases.md",
+      "findings": [
+        {
+          "severity": "info",
+          "location": "scripts/master-audio.ts:47",
+          "issue": "The -1 dBTP cap uses the source's true peak (reported at 0.1 dB precision), and the gain is rounded with toFixed(2) before the 128k MP3 re-encode. Those steps plus encoder overshoot can put a capped file's final true peak slightly above -1 dBTP, still below 0 dBFS.",
+          "fix": "No change recommended; the -1 dB ceiling exists to absorb encoder overshoot. If a strict output guarantee is ever needed, measure the encoded output instead of the source."
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "scopes": 1,
+    "running": 0,
+    "finished": 1,
+    "findings": 1,
+    "severityCounts": {
+      "info": 1
+    }
+  }
+}
