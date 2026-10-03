@@ -167,7 +167,10 @@ Versions and API facts: `docs/stack-notes.md`.
 - Test: `npm test`
 - Typecheck: `npm run typecheck`
 - Verify (gate): `npm run verify`
-- Build / run locally: not yet set up (arrives with the reader engine, step 7).
+- Run locally: `npm run dev` (Vite dev server; long-running, only when asked).
+- Build: `npm run build` (static site in `dist/`, relative base for GitHub Pages).
+- Art: `npm run art:build` (free; converts `assets-in/` to `public/art/*.webp` +
+  `manifest.json`; missing pictures fall back to placeholders in the reader).
 - Audio: `npm run audio:gen -- <narration|sfx|music|all> [id]` (spends ElevenLabs
   credits; skips existing files), then `npm run audio:master` (free, rebuilds
   `public/audio/`).
@@ -352,6 +355,7 @@ When the user requests a durable behavior change, record it here or in the relev
 ## Child DOX Index
 
 - `docs/AGENTS.md`: plan, verbatim story source, stack notes.
-- Code (no child doc yet): `src/content/book.ts` (page text + scene slugs), `src/content/sound.ts` (all SFX/music ids + prompts), `scripts/` (audio generation + mastering), `tests/` (Node test runner).
+- Code (no child doc yet): `src/content/book.ts` (page text + scene slugs), `src/content/scenes.ts` (per-page atmosphere, phrase-anchored cues, interactions), `src/content/sound.ts` (all SFX/music ids + prompts), `src/main.ts` (boot), `src/director.ts` (reading flow: turns, ink reveal, cues, push-ins, interactions), `src/surfaces.ts` (what each leaf face shows), `src/input.ts`, `src/engine/` (Three.js stage, book, pages, ink, particles, backdrop, cinema, reflection), `src/audio/mixer.ts`, `src/ui/` (HUD, overlays), `scripts/` (audio generation + mastering, art build), `tests/` (Node test runner).
+- `public/art/`: committed WebP art + `manifest.json`, built from `assets-in/` by `art:build`.
 - `audio-src/`: paid ElevenLabs originals (committed, never edited or regenerated without Arshad's say-so). `public/audio/` is built from it by `audio:master`.
 - Gitignored working folders: `assets-in/` (raw ChatGPT images from Arshad), `spikes/` (throwaway prototypes, never promoted as-is).

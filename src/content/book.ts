@@ -153,3 +153,19 @@ export const book: Book = {
     },
   ],
 };
+
+/**
+ * A page's blocks joined by single spaces. Positions in this string are the page's
+ * character indices: narration timings, the ink reveal and scene cues all use them.
+ */
+export const pageText = (page: Page): string => page.blocks.map((b) => b.text).join(' ');
+
+/** Index in `pageText(page)` where each block starts. */
+export function blockStarts(page: Page): number[] {
+  let index = 0;
+  return page.blocks.map((b) => {
+    const start = index;
+    index += b.text.length + 1;
+    return start;
+  });
+}

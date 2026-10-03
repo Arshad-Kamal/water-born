@@ -15,7 +15,8 @@ export async function loadManifest(): Promise<void> {
 }
 
 export const hasArt = (name: string): boolean => available.has(name);
-export const artUrl = (name: string): string => `${BASE}art/${name}.webp`;
+// Absolute, because a relative url() inside a CSS custom property resolves against the stylesheet, not the page.
+export const artUrl = (name: string): string => new URL(`${BASE}art/${name}.webp`, document.baseURI).href;
 
 /** Decoded image for an art name, or undefined when that picture does not exist yet. */
 export function artImage(name: string): Promise<HTMLImageElement | undefined> {

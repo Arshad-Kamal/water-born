@@ -5,8 +5,9 @@ export interface Point {
   readonly y: number;
 }
 
-/** A sound word bursting off the page, e.g. "Boom!". Tapping it replays its cue. */
+/** A sound word bursting off the page, e.g. "Boom!". Tapping it replays its cue. A new one knocks out the last. */
 export function punch(host: HTMLElement, text: string, at: Point, water: boolean, onTap: () => void): void {
+  for (const old of host.querySelectorAll('.punch')) old.classList.add('leave');
   const el = document.createElement('button');
   el.className = `punch${water ? ' water' : ''}`;
   el.textContent = text;
@@ -162,6 +163,16 @@ export class Fires {
       setTimeout(() => f.remove(), 700);
     }
   }
+}
+
+/** "Read it again" on the last spread. */
+export function replayButton(host: HTMLElement, onClick: () => void): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.className = 'choice primary replay';
+  button.textContent = 'Read it again';
+  button.addEventListener('click', onClick, { once: true });
+  host.append(button);
+  return button;
 }
 
 export class TurnHint {

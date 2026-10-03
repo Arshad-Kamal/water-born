@@ -4,11 +4,10 @@
 Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D book whose scenes spill out of the pages (light, particles, sound, camera). Story words stay verbatim; everything else (art, sound, effects, pacing) is creative liberty.
 
 ## Status (overwrite in place, max 6 lines)
-- Done: steps 1–5. Mockup v1 approved 2026-10-03. Audio: 18 narration, 25 SFX, 7 music (originals `audio-src/`, mastered `public/audio/`).
-- Spike lessons for the engine: body text ~85px+ on a 1536px page texture; less oblique camera than the spike.
-- Arshad generating round 3 art (26 images, `asset-prompts.md`), batch A first.
-- Step 7 IN PROGRESS (WIP checkpoint, typecheck green, not wired, not reviewed): `src/content/scenes.ts`, `src/engine/*`, `src/audio/mixer.ts`, `src/ui/*`, `src/assets.ts`, `index.html`, `src/styles.css`, `vite.config.ts`. Missing: `src/director.ts`, `src/main.ts`, `scripts/build-art.ts` (+ `public/art/manifest.json`), dev/build npm scripts.
-- iPad fps check deferred to the first GitHub Pages deploy (Arshad, 2026-10-02).
+- Done: steps 1–6, 8. Step 7 engine wired end to end (2026-10-03): verify + build green, render-checked at 1280×800 and 844×390 in headless Chromium (GPU), self-read and narrated modes. Engine review loop NOT yet run.
+- Art: 25/26 round 3 images in `public/art/` (31 WebP incl. 5 hero cards). Missing: `plate-ch1.jpg` (start/title backdrop falls back to a dimmed p01).
+- Open: phone landscape body text renders ~9px (frame the text page larger on small screens); start backdrop lighter than mockup until plate-ch1 lands.
+- Next: engine review loop (§ Review dispositions), then step 10 deploy (ask Arshad before creating/pushing the repo), then iPad fps check on the deployed URL (deferred to first deploy, Arshad 2026-10-02).
 
 ## Decisions (Arshad, 2026-10-02)
 - Experience: 3D book + atmosphere spilling out + 4 camera push-ins (pages p05, p06, p12, p17).
@@ -22,6 +21,14 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 - p09 character cards are cropped from the round 2 sheets (no extra prompts); regenerate as dedicated portraits only if they look soft.
 - Pages are 2:3 portrait to match ChatGPT's 1024×1536 output (spike used 3:4); push-in scenes also get a 3:2 wide. Raw art lands in gitignored `assets-in/`; optimised WebP gets committed.
 
+## Engine decisions (2026-10-03, agent's call under creative liberty)
+- "Read to me" turns pages by itself 2.5 s after a page's narration ends (title spread after 3 s); "I'll read myself" never auto-turns. Pause stops both.
+- Tap on the right page first completes the words (self-read jumps ahead silently: skipped cues keep their state but make no sound; with narration the text shows at once and the narrator carries on), then turns. Left page turns back. Arrow keys / Space / PageUp/Down turn.
+- p13 count gates reading before each of One / Two / three (narration pauses, resumes just before the word); each gate resolves on tap or after 4 s. p09 cards slide out at "Let me introduce ourselves." and light as each name is spoken; "Oh wait..." freeze-frames to sepia and holds the music until the page turns. p16 fires can be tapped out; any left go out at "we put out the last fire".
+- Push-ins play only when that page's painting exists (wide preferred); a tap skips one.
+- Backdrop = the spread's own painting blurred; cover/title/credits prefer the chapter plate, dimmer.
+- Start screen: closed book with its cover mirrored below (fades on start). Neutral tone mapping (ACES dulled the paintings); printed surfaces carry a 0.28 light-independent glow so parchment reads as parchment in every grade; bloom threshold 0.95 keeps paper out of bloom.
+
 ## Visual direction (mockup v1)
 - Book floats in a world made from the current scene's art, heavily blurred and graded, with firelight/ember or water particles per scene.
 - Teal leather boards with gold tooling; parchment pages; left page = full-bleed art, right page = text.
@@ -32,7 +39,7 @@ Goal: a free-hosted web storybook of James's story "Water Born", read as a 3D bo
 
 ## Architecture
 - Vite + TypeScript + Three.js (pages = skinned bending meshes, page content drawn to canvas textures), raw Web Audio. Vanilla Three over React Three Fiber (fewer parts). Howler.js and GSAP dropped (were planned): Web Audio is needed anyway for the underwater low-pass and sample-accurate narration sync; a small tween helper covers animation.
-- `src/content/book.ts` is the one home for page text + scene slugs (scene cues get added there). Pagination lives there, not here.
+- `src/content/book.ts` is the one home for page text + scene slugs (pagination lives there); `src/content/scenes.ts` holds each scene's atmosphere, phrase-anchored cues and interaction anchors.
 - Audio: `npm run audio:gen -- <narration|sfx|music|all> [id]` writes paid originals once to `audio-src/` (committed, never overwritten); `npm run audio:master` builds `public/audio/` (static gain to LUFS targets: narration -16, SFX -17, loops -26, music -21; plus `narration/<page>.json` per-character timings). Sound list + prompts: `src/content/sound.ts`; narrator tags: `scripts/narration-direction.ts`. The API key never ships to the browser or the repo.
 - Music by mood: theme (cover/p01), attack (p02–p05), sorrow (p06–p07), hope (p08–p10), journey (p11–p14), stealth (p15–p16), victory (p17–p18).
 - Fallback if the 3D book is not smooth/readable on the target device: CSS 3D page flip with the WebGL atmosphere behind it.
@@ -66,9 +73,9 @@ Plus: cover, title page ("Story by James"), back cover with credits.
 3. [x] Art round 1: `docs/art-bible.md` (characters, palette) + 3 style-test prompts → James picks → character-sheet prompts.
 4. [x] Design-sandbox mockup: start screen + one spread → Arshad approves.
 5. [x] Audio: pick voice → narration with timings → SFX → ambience loops → music.
-6. [ ] Remaining scene prompts (`docs/asset-prompts.md`); Arshad generates into `assets-in/`.
-7. [ ] Reader engine: book, page turn, text reveal, audio, FX system, interactions, push-ins, settings, preload.
-8. [ ] Integrate assets (image optimisation script → WebP).
+6. [x] Remaining scene prompts (`docs/asset-prompts.md`); Arshad generated round 3 into `assets-in/` (plate-ch1 still missing).
+7. [ ] Reader engine: book, page turn, text reveal, audio, FX system, interactions, push-ins, settings, preload. (Built and render-checked; review loop pending.)
+8. [x] Integrate assets (`npm run art:build` → `public/art/` WebP + manifest).
 9. [ ] Verify: verbatim test, typecheck, build, render-local screenshots, independent review, real-device test with James.
 10. [ ] Deploy: GitHub repo + Actions → Pages.
 

@@ -125,7 +125,8 @@ const fragment = /* glsl */ `
     #elif SHAPE == 3
       a = exp(-r * r * 40.0) + (exp(-abs(c.x) * 40.0) + exp(-abs(c.y) * 40.0)) * smoothstep(0.5, 0.0, r) * 0.5;
     #else
-      a = exp(-r * r * 9.0);
+      // Fades fully to zero before the sprite edge, or big mist sprites show as squares.
+      a = exp(-r * r * 9.0) * smoothstep(0.5, 0.25, r);
     #endif
     float alpha = a * vAlpha * uOpacity;
     if (alpha < 0.004) discard;

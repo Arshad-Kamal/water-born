@@ -7,11 +7,14 @@
     "node": ">=24"
   },
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
     "test": "node --test \"tests/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm test",
     "audio:gen": "node --env-file=.env scripts/gen-audio.ts",
-    "audio:master": "node scripts/master-audio.ts"
+    "audio:master": "node scripts/master-audio.ts",
+    "art:build": "node scripts/build-art.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",

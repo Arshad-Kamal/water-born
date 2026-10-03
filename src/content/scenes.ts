@@ -19,6 +19,8 @@ export interface Cue {
   /** Brief bright flash of the scene light. */
   readonly flash?: boolean;
   readonly burst?: ParticleKind;
+  /** Freeze-frame: the picture drains to sepia and the music stops until the page turns. */
+  readonly freeze?: boolean;
 }
 
 export interface Scene {
@@ -66,7 +68,7 @@ export const SCENES: Readonly<Record<string, Scene>> = {
   training: { music: 'hope', ambience: ['river-day-loop'], grade: 'day', particles: { motes: 0.8 } },
   'team-intro': {
     music: 'hope', ambience: ['river-day-loop'], grade: 'day', particles: { motes: 0.6 }, interaction: 'cards',
-    cues: [{ phrase: 'Oh wait...', sfx: 'record-scratch' }],
+    cues: [{ phrase: 'Oh wait...', sfx: 'record-scratch', freeze: true }],
   },
   'dusk-setoff': { music: 'hope', ambience: ['night-jungle-loop'], grade: 'dusk', particles: { motes: 0.4, fireflies: 0.4 } },
   'river-swim': {
@@ -93,6 +95,15 @@ export const SCENES: Readonly<Record<string, Scene>> = {
     cues: [{ phrase: 'The End.', sfx: 'victory-sparkle', burst: 'sparkles' }],
   },
 };
+
+/** The words on the vine-leap page the reader taps to count, in order. Reading pauses at each one. */
+export const COUNT_WORDS = ['One', 'Two', 'three'] as const;
+
+/** Phrase on the team-intro page at which the character cards slide out. */
+export const CARDS_PHRASE = 'Let me introduce ourselves.';
+
+/** Phrase on the last-fire page at which any fires still burning go out. */
+export const FIRES_OUT_PHRASE = 'we put out the last fire';
 
 /** Character cards for the "Let me introduce ourselves" page; each lights up as its name is read. */
 export const TEAM = [

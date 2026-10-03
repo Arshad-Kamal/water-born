@@ -3,11 +3,12 @@ import { easeInOutCubic } from './ticker.ts';
 
 export const PAGE_W = 1;
 export const PAGE_H = 1.5;
-const COVER_W = 1.03;
-const COVER_H = 1.56;
+export const COVER_W = 1.03;
+export const COVER_H = 1.56;
 const SEGMENTS = 28;
 const GAP = 0.0028;
 const BASE_Z = 0.014;
+export const COVER_DEPTH = 0.014;
 const CURL = 0.8;
 const TURN_SECONDS = 1.05;
 const FAST_TURN_SECONDS = 0.55;
@@ -106,14 +107,14 @@ export class Book {
     this.group.rotation.x = -0.5;
 
     const paperGeo = leafGeometry(PAGE_W, PAGE_H, 0.0016);
-    const coverGeo = leafGeometry(COVER_W, COVER_H, 0.014);
+    const coverGeo = leafGeometry(COVER_W, COVER_H, COVER_DEPTH);
     for (let i = 0; i < this.leafCount; i++) {
       const rigid = i === 0;
       const sides = rigid ? coverBoard : this.edge;
       this.leaves.push(this.makeLeaf(rigid ? coverGeo : paperGeo, [sides, sides, sides, sides, this.placeholder, this.placeholder], rigid));
     }
 
-    const board = new THREE.Mesh(new THREE.BoxGeometry(COVER_W, COVER_H, 0.014), [coverBoard, coverBoard, coverBoard, coverBoard, this.placeholder, coverBoard]);
+    const board = new THREE.Mesh(new THREE.BoxGeometry(COVER_W, COVER_H, COVER_DEPTH), [coverBoard, coverBoard, coverBoard, coverBoard, this.placeholder, coverBoard]);
     board.position.set(COVER_W / 2, 0, 0);
     board.receiveShadow = true;
     this.group.add(board);
@@ -122,6 +123,11 @@ export class Book {
     });
     for (const leaf of this.leaves) this.pose(leaf);
     this.refreshWindow();
+  }
+
+  /** The hard front cover (leaf 0); while closed, its geometry spans x 0..COVER_W in its own space. */
+  get coverMesh(): THREE.Object3D {
+    return this.leaves[0]!.mesh;
   }
 
   /** Number of leaves turned to the left: 0 = closed, leafCount = finished. */
@@ -272,8 +278,10 @@ export class Book {
     leaf.bones[0]!.rotation.y = -Math.PI * p - peek;
     for (let i = 1; i <= SEGMENTS; i++) leaf.bones[i]!.rotation.y = (bend * curlWeights[i]!) / curlSum;
     const n = this.leafCount;
-    const zDown = BASE_Z + (n - 1 - index) * GAP;
-    const zUp = BASE_Z + index * GAP;
+    // The thick front cover lies on top of the paper while closed and under it once turned.
+    const coverLift = COVER_DEPTH / 2;
+    const zDown = BASE_Z + (n - 1 - index) * GAP + (leaf.rigid ? coverLift : 0);
+    const zUp = BASE_Z + index * GAP + (leaf.rigid ? 0 : coverLift);
     leaf.mesh.position.z = THREE.MathUtils.lerp(zDown, zUp, p) + turning * 0.03;
     if (leaf.rigid) leaf.mesh.position.y = 0;
   }

@@ -4,7 +4,10 @@
 ## Toolchain (verified 2026-10-02)
 - Node v24.18.0 runs `.ts` tests directly (`node --test "tests/**/*.test.ts"`, built-in type stripping). Imports of `.ts` files need the explicit extension + `allowImportingTsExtensions` in tsconfig; `erasableSyntaxOnly` keeps code strippable (no `enum`, no parameter properties).
 - TypeScript 7.0.2 (`tsc --noEmit`), `@types/node@24`. Installed: three 0.186.1 (+ @types/three 0.186.0), vite 8.3.2.
-- ffmpeg/ffprobe on PATH (used by `scripts/master-audio.ts`). Gotchas: `ffprobe` on an MP3 piped via stdin reports duration `N/A`, so probe files on disk; the `ebur128` filter reports on stderr, so read it with `spawnSync`, not `execFileSync`.
+- three 0.186 (2026-10-03): `THREE.Clock` logs a deprecation warning, use `THREE.Timer` (`timer.update(rafTimestamp).getDelta()`; `connect(document)` zeroes deltas while hidden); `PCFSoftShadowMap` is removed (falls back with a warning), use `PCFShadowMap`. `NeutralToneMapping` keeps painted art's colours far better than ACES.
+- CSS gotcha: a relative `url()` inside a custom property (`--img: url(...)`) resolves against the stylesheet that uses it (`dist/assets/`), not the page; build absolute URLs from `document.baseURI` (`src/assets.ts`).
+- Render checks: Playwright Chromium headless with SwiftShader runs ~2 fps (the capped `dt` turns everything into slow motion); `--use-angle=gl-egl --ignore-gpu-blocklist --enable-gpu` uses this machine's GPU at 60 fps.
+- ffmpeg/ffprobe on PATH (used by `scripts/master-audio.ts`; `scripts/build-art.ts` needs libwebp, present). Gotchas: `ffprobe` on an MP3 piped via stdin reports duration `N/A`, so probe files on disk; the `ebur128` filter reports on stderr, so read it with `spawnSync`, not `execFileSync`.
 
 ## ElevenLabs API (docs read 2026-10-02, elevenlabs.io/docs)
 - Auth header `xi-api-key`; key lives only in `.env` as `ELEVENLABS_API_KEY`.

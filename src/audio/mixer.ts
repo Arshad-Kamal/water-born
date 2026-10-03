@@ -30,6 +30,8 @@ export class Mixer {
   private readonly tracks = new Map<MusicId, Track>();
   private currentMusic?: MusicId;
   private voice?: { src: AudioBufferSourceNode; startedAt: number };
+  /** Bumped by every play/stop, so a play still loading when a newer request comes in never starts. */
+  private voiceRequest = 0;
   private paused = false;
 
   constructor() {
@@ -146,6 +148,13 @@ export class Mixer {
     track.gain.gain.setTargetAtTime(1, now, 0.9);
   }
 
+  /** Silences the current music (freeze-frame) or brings it back, leaving voice and effects alone. */
+  holdMusic(held: boolean): void {
+    const track = this.currentMusic ? this.tracks.get(this.currentMusic) : undefined;
+    if (!track) return;
+    track.gain.gain.setTargetAtTime(held ? 0 : 1, this.ctx.currentTime, held ? 0.05 : 0.8);
+  }
+
   async narrationTiming(pageId: string): Promise<NarrationTiming> {
     const res = await fetch(`${BASE}audio/narration/${pageId}.json`);
     if (!res.ok) throw new Error(`timing ${pageId}: ${res.status}`);
@@ -156,10 +165,15 @@ export class Mixer {
     this.load(`audio/narration/${pageId}.mp3`).catch(() => undefined);
   }
 
-  /** Plays a page's narration from `offset` seconds; resolves with the context time that corresponds to clip time 0. */
-  async playNarration(pageId: string, offset = 0): Promise<number> {
+  /**
+   * Plays a page's narration from `offset` seconds. Resolves with the context time that
+   * corresponds to clip time 0, or undefined if a newer play or stop superseded it while loading.
+   */
+  async playNarration(pageId: string, offset = 0): Promise<number | undefined> {
     this.stopNarration();
+    const request = this.voiceRequest;
     const buffer = await this.load(`audio/narration/${pageId}.mp3`);
+    if (request !== this.voiceRequest) return undefined;
     const src = this.ctx.createBufferSource();
     src.buffer = buffer;
     src.connect(this.voiceBus);
@@ -177,6 +191,7 @@ export class Mixer {
   }
 
   stopNarration(): void {
+    this.voiceRequest++;
     if (!this.voice) return;
     const { src } = this.voice;
     this.voice = undefined;

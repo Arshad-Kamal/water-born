@@ -24,7 +24,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   background: radial-gradient(120% 95% at 50% 46%, transparent 52%, rgba(0, 0, 0, 0.72) 100%); }
 #fx-layer, #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 #ui-layer { z-index: 4; }
-#fx-layer > *, #ui-layer > * { pointer-events: auto; }
+/* :where() keeps this at zero specificity so .hidden/.gone/.done states can switch pointer events off. */
+:where(#fx-layer, #ui-layer) > * { pointer-events: auto; }
 
 .letterbox { position: absolute; left: 0; right: 0; height: 11vh; background: #000; z-index: 2; pointer-events: none;
   transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1); }
@@ -88,6 +89,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   color: #ffd27a; -webkit-text-stroke: 3px #5a1606; paint-order: stroke fill; white-space: nowrap; cursor: pointer;
   text-shadow: 0 0 40px rgba(255, 120, 40, 0.75), 0 8px 0 #5a1606; animation: punch 1.9s cubic-bezier(0.2, 0.9, 0.2, 1) forwards; }
 .punch.water { color: #dff8fc; -webkit-text-stroke-color: #0b4a5c; text-shadow: 0 0 40px rgba(63, 184, 201, 0.9), 0 8px 0 #0b4a5c; }
+.punch.leave { pointer-events: none; animation: punch-leave 0.3s ease-in forwards; }
+@keyframes punch-leave {
+  from { transform: translate(-50%, -54%) scale(1) rotate(var(--r)); opacity: 1; }
+  to { transform: translate(-50%, -50%) scale(1.35) rotate(var(--r)); opacity: 0; filter: blur(6px); }
+}
 @keyframes punch {
   0% { transform: translate(-50%, -50%) scale(2.6) rotate(var(--r)); opacity: 0; filter: blur(8px); }
   12% { transform: translate(-50%, -50%) scale(0.92) rotate(var(--r)); opacity: 1; filter: blur(0); }
@@ -119,8 +125,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* ---------- count drops ---------- */
 .count { position: absolute; left: 0; top: 0; display: flex; gap: 3vw; transform: translate(-50%, -50%); }
-.count button { width: clamp(64px, 8vw, 104px); height: clamp(64px, 8vw, 104px); border-radius: 50% 50% 50% 0; transform: rotate(-45deg) scale(0.6); opacity: 0.45;
-  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.5), rgba(63, 184, 201, 0.25) 60%, rgba(14, 77, 100, 0.4));
+.count button { width: clamp(64px, 8vw, 104px); height: clamp(64px, 8vw, 104px); border-radius: 50% 50% 50% 0; transform: rotate(-45deg) scale(0.7); opacity: 0.85;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.45), rgba(14, 77, 100, 0.6) 55%, rgba(4, 30, 40, 0.8));
   box-shadow: inset 0 0 0 2px rgba(127, 219, 231, 0.7), 0 0 30px rgba(63, 184, 201, 0.3); transition: transform 0.45s cubic-bezier(0.2, 1.4, 0.3, 1), opacity 0.3s; }
 .count button span { display: block; transform: rotate(45deg); font: 900 clamp(30px, 3.6vw, 48px) var(--display); color: #fff; text-shadow: 0 0 14px var(--aqua); }
 .count button.hit { transform: rotate(-45deg) scale(1.1); opacity: 1; box-shadow: inset 0 0 0 2px #fff, 0 0 50px rgba(127, 219, 231, 0.9); }
@@ -146,3 +152,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   .punch { animation-duration: 1.2s; }
   .letterbox { transition: none; }
 }
+
+/* ---------- end + failure ---------- */
+.replay { position: absolute; left: 50%; bottom: 88px; transform: translateX(-50%); animation: rise 0.8s 0.6s both; }
+.replay:hover { transform: translateX(-50%) translateY(-2px); }
+@keyframes rise { from { opacity: 0; transform: translateX(-50%) translateY(16px); } }
+.failure { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; font: italic 400 20px var(--body); color: #9fbcc6; }
