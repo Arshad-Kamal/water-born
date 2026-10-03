@@ -43,6 +43,9 @@ export class Cinema {
     while (performance.now() < end && alive()) await tween(0.1, () => undefined);
     await tween(0.8, (k) => (this.mesh.material.opacity = 1 - k));
     this.mesh.visible = false;
+    // Free the full-screen picture now rather than holding it until the next push-in.
+    tex.dispose();
+    if (this.mesh.material.map === tex) this.mesh.material.map = null;
   }
 
   update(): void {

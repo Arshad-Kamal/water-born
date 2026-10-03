@@ -141,15 +141,14 @@ export class Book {
 
   /** World-space centre of the left (-1) or right (+1) page, or the whole spread (0). */
   pagePoint(side: -1 | 0 | 1, out = new THREE.Vector3()): THREE.Vector3 {
-    this.group.updateMatrixWorld();
-    return out.set(side * PAGE_W * 0.5, 0, BASE_Z).applyMatrix4(this.group.matrixWorld);
+    // localToWorld refreshes only the group's own world matrix, not its ~600 leaf bones.
+    return this.group.localToWorld(out.set(side * PAGE_W * 0.5, 0, BASE_Z));
   }
 
   /** World-space point on a page face from UV (u to the right, v up), for the given side. */
   pageUvPoint(side: -1 | 1, u: number, v: number, out = new THREE.Vector3()): THREE.Vector3 {
-    this.group.updateMatrixWorld();
     const x = side === 1 ? u * PAGE_W : -PAGE_W + u * PAGE_W;
-    return out.set(x, (v - 0.5) * PAGE_H, BASE_Z + 0.03).applyMatrix4(this.group.matrixWorld);
+    return this.group.localToWorld(out.set(x, (v - 0.5) * PAGE_H, BASE_Z + 0.03));
   }
 
   turn(dir: 1 | -1): boolean {

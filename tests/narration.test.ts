@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { book } from '../src/content/book.ts';
-import { spokenChars, type NarrationTiming } from '../src/content/narration-timing.ts';
+import { spokenChars, timeOf, type NarrationTiming } from '../src/content/narration-timing.ts';
 import { DIRECTION } from '../scripts/narration-direction.ts';
 import { buildNarrationInput, toTiming } from '../scripts/narration.ts';
 
@@ -46,6 +46,17 @@ test('spokenChars counts characters whose start time has passed', () => {
   assert.equal(spokenChars(at, 0.15), 2);
   assert.equal(spokenChars(at, 0.2), 3, 'a character starting exactly now counts as spoken');
   assert.equal(spokenChars(at, 5), 4);
+});
+
+test('timeOf finds when a page character is spoken, block by block', () => {
+  // Two blocks, "Ab" and "Cde", joined as "Ab Cde": starts 0 and 3; index 2 is the joining space.
+  const timing: NarrationTiming = { duration: 3, blocks: [{ at: [0.1, 0.2] }, { at: [1.0, 1.1, 1.2] }] };
+  const starts = [0, 3];
+  assert.equal(timeOf(timing, starts, 0), 0.1);
+  assert.equal(timeOf(timing, starts, 4), 1.1, 'second block');
+  assert.equal(timeOf(timing, starts, 2), 0.2, 'the space after a block clamps to its last character');
+  assert.equal(timeOf(timing, starts, 99), 1.2, 'past the end clamps to the last character');
+  assert.equal(timeOf({ duration: 0, blocks: [] }, starts, 1), 0, 'no timing falls back to the start');
 });
 
 test('committed narration timings match the current page text', () => {

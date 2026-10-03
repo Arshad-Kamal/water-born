@@ -1,15 +1,13 @@
 import * as THREE from 'three';
+import { canvas } from './pages.ts';
 import { damp } from './ticker.ts';
 
 const DISTANCE = 20;
 const OVERSCAN = 1.25;
 const FADE_RATE = 1.8;
 
-function canvas2d(w: number, h: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
-  const c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
-  const ctx = c.getContext('2d')!;
+function smoothCanvas(w: number, h: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
+  const [c, ctx] = canvas(w, h);
   ctx.imageSmoothingQuality = 'high';
   return [c, ctx];
 }
@@ -20,12 +18,12 @@ function canvas2d(w: number, h: number): [HTMLCanvasElement, CanvasRenderingCont
  * (ctx.filter blur would be simpler but older iPad Safari lacks it).
  */
 function blurred(image: CanvasImageSource, w: number, h: number): HTMLCanvasElement {
-  const [small, sctx] = canvas2d(32, 20);
+  const [small, sctx] = smoothCanvas(32, 20);
   const scale = Math.max(small.width / w, small.height / h);
   sctx.drawImage(image, (small.width - w * scale) / 2, (small.height - h * scale) * 0.4, w * scale, h * scale);
   let c = small;
   for (let i = 0; i < 4; i++) {
-    const [next, nctx] = canvas2d(c.width * 2, c.height * 2);
+    const [next, nctx] = smoothCanvas(c.width * 2, c.height * 2);
     nctx.drawImage(c, 0, 0, next.width, next.height);
     c = next;
   }

@@ -9,6 +9,8 @@ const TAP_MAX_MS = 450;
 /** A drag commits past this fraction of a turn, or when flicked faster than FLICK px/ms. */
 const COMMIT_AMOUNT = 0.3;
 const FLICK = 0.5;
+/** A pause this long before letting go cancels the flick: the finger had stopped. */
+const FLICK_STALE_MS = 90;
 
 interface Press {
   readonly id: number;
@@ -21,6 +23,9 @@ interface Press {
   lastT: number;
   velocity: number;
 }
+
+/** How far through a turn a drag from the press point to `x` is (0..1 for the page being turned). */
+const turnAmount = (press: Press, dir: 1 | -1, x: number): number => ((press.x0 - x) * dir) / press.span;
 
 export function attachInput(canvas: HTMLCanvasElement, director: Director, book: Book): void {
   let press: Press | undefined;
@@ -45,16 +50,17 @@ export function attachInput(canvas: HTMLCanvasElement, director: Director, book:
         press.span = director.spineAndPageWidth().pageWidth * 1.6;
       }
     }
-    if (press.dir) book.drag((-dx * press.dir) / press.span);
+    if (press.dir) book.drag(turnAmount(press, press.dir, e.clientX));
   });
 
   const release = (e: PointerEvent, cancelled: boolean): void => {
     if (!press || e.pointerId !== press.id) return;
-    const { dir, x0, y0, t0, span, velocity } = press;
+    const p = press;
+    const { dir, x0, y0, t0 } = p;
     press = undefined;
     if (dir) {
-      const amount = ((x0 - e.clientX) * dir) / span;
-      book.endDrag(!cancelled && (amount > COMMIT_AMOUNT || -velocity * dir > FLICK));
+      const velocity = e.timeStamp - p.lastT > FLICK_STALE_MS ? 0 : p.velocity;
+      book.endDrag(!cancelled && (turnAmount(p, dir, e.clientX) > COMMIT_AMOUNT || -velocity * dir > FLICK));
       return;
     }
     const still = Math.hypot(e.clientX - x0, e.clientY - y0) < DRAG_START_PX;

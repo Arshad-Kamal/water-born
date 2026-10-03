@@ -99,6 +99,9 @@ export const SCENES: Readonly<Record<string, Scene>> = {
 /** The words on the vine-leap page the reader taps to count, in order. Reading pauses at each one. */
 export const COUNT_WORDS = ['One', 'Two', 'three'] as const;
 
+/** Picture name of a hero's card (built from the character sheets by scripts/build-art.ts). */
+export const cardArtName = (hero: string): string => `card-${hero.toLowerCase()}`;
+
 /** Phrase on the team-intro page at which the character cards slide out. */
 export const CARDS_PHRASE = 'Let me introduce ourselves.';
 

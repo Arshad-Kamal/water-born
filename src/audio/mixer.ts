@@ -90,9 +90,10 @@ export class Mixer {
     const now = this.ctx.currentTime;
     for (const [id, loop] of this.loops) {
       if (ids.includes(id)) continue;
-      loop.gain.gain.setTargetAtTime(0, now, 0.5);
-      loop.src.stop(now + 3);
       this.loops.delete(id);
+      loop.gain.gain.setTargetAtTime(0, now, 0.5);
+      // A loop whose file is still loading was never started, and stop() before start() throws.
+      if (loop.src.buffer) loop.src.stop(now + 3);
     }
     for (const id of ids) {
       if (this.loops.has(id)) continue;
@@ -119,16 +120,14 @@ export class Mixer {
   setMusic(id: MusicId): void {
     if (id === this.currentMusic) return;
     const now = this.ctx.currentTime;
-    if (this.currentMusic) {
-      const old = this.tracks.get(this.currentMusic);
-      if (old) {
-        old.gain.gain.setTargetAtTime(0, now, 0.8);
-        const el = old.el;
-        setTimeout(() => {
-          if (this.currentMusic !== id || el === this.tracks.get(id)?.el) return;
-          el.pause();
-        }, 4000);
-      }
+    const oldId = this.currentMusic;
+    const old = oldId ? this.tracks.get(oldId) : undefined;
+    if (old) {
+      old.gain.gain.setTargetAtTime(0, now, 0.8);
+      // Pause once faded, unless the reader has come back to this music meanwhile.
+      setTimeout(() => {
+        if (this.currentMusic !== oldId) old.el.pause();
+      }, 4000);
     }
     this.currentMusic = id;
     let track = this.tracks.get(id);

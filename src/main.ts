@@ -51,7 +51,7 @@ async function boot(): Promise<void> {
     return;
   }
   const mixer = new Mixer();
-  mixer.preload(['page-turn', 'book-open']).catch(() => undefined);
+  void mixer.preload(['page-turn', 'book-open']);
 
   await Promise.all([loadFonts(), loadManifest()]);
   progress.progress(0.5);

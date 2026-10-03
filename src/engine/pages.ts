@@ -1,7 +1,7 @@
 // Paints every page surface onto canvases. Text pages produce two canvases: the
 // ink (what the words look like) and a half-res index mask (which character each
 // pixel belongs to), so a shader can ink the words in one character at a time.
-import type { Block, Page } from '../content/book.ts';
+import { blockStarts, type Block, type Page } from '../content/book.ts';
 
 export const TEX_W = 1024;
 export const TEX_H = 1536;
@@ -25,7 +25,7 @@ export const FONT_FACES = [
   `italic 900 120px ${FONT.display}`,
 ];
 
-function canvas(w = TEX_W, h = TEX_H): [HTMLCanvasElement, CanvasRenderingContext2D] {
+export function canvas(w = TEX_W, h = TEX_H): [HTMLCanvasElement, CanvasRenderingContext2D] {
   const c = document.createElement('canvas');
   c.width = w;
   c.height = h;
@@ -117,9 +117,6 @@ export interface Hotspot {
 export interface TextLayout {
   readonly ink: HTMLCanvasElement;
   readonly mask: HTMLCanvasElement;
-  /** Total characters, indexed the way narration timings are: block start + position in block text. */
-  readonly total: number;
-  readonly blockStarts: readonly number[];
   readonly hotspots: readonly Hotspot[];
 }
 
@@ -310,19 +307,17 @@ function ornament(p: Painter, cx: number, cy: number, scale: number): void {
 export function layoutTextPage(page: Page, pageNumber: number, chapter: number): TextLayout {
   const p = new Painter();
   const hotspots: Hotspot[] = [];
-  const blockStarts: number[] = [];
   const ops: Op[] = [];
-  let index = 0;
+  // Mask indices must match narration timings and cues, so they come from the one index home.
+  const starts = blockStarts(page);
   let afterChapter = false;
   page.blocks.forEach((block, i) => {
-    blockStarts.push(index);
+    const index = starts[i]!;
     if (block.kind === 'chapter') ops.push(...chapterBlock(p, block, index));
     else if (block.kind === 'sound') ops.push(...soundBlock(p, block, index, hotspots, i));
     else ops.push(...bodyBlock(p, block, index, afterChapter));
     afterChapter = block.kind === 'chapter';
-    index += block.text.length + 1;
   });
-  const total = index - 1;
 
   const hasChapter = page.blocks[0]?.kind === 'chapter';
   if (!hasChapter) {
@@ -351,10 +346,22 @@ export function layoutTextPage(page: Page, pageNumber: number, chapter: number):
   const folio = String(pageNumber);
   p.text(folio, (TEX_W + MARGIN_L - MARGIN_R) / 2 - p.measure(folio) / 2, TEX_H - 92, 26, ALWAYS);
 
-  return { ink: p.inkCanvas, mask: p.maskCanvas, total, blockStarts, hotspots };
+  return { ink: p.inkCanvas, mask: p.maskCanvas, hotspots };
 }
 
 // ---------- illustrated and static pages ----------
+
+let pictureGrain: HTMLCanvasElement | undefined;
+
+/** Paper grain for picture pages, painted once and multiplied over every picture. */
+function pictureGrainLayer(): HTMLCanvasElement {
+  if (!pictureGrain) {
+    const [c, ctx] = canvas();
+    grain(ctx, TEX_W, TEX_H, 7, 0.6);
+    pictureGrain = c;
+  }
+  return pictureGrain;
+}
 
 /** Full-bleed illustration on a left-hand page (spine on the right). */
 export function artPage(image: CanvasImageSource | undefined, imageW: number, imageH: number, fallbackHue: string): HTMLCanvasElement {
@@ -373,7 +380,7 @@ export function artPage(image: CanvasImageSource | undefined, imageW: number, im
     ctx.fillRect(0, 0, TEX_W, TEX_H);
   }
   ctx.globalCompositeOperation = 'multiply';
-  grain(ctx, TEX_W, TEX_H, 7, 0.6);
+  ctx.drawImage(pictureGrainLayer(), 0, 0);
   ctx.globalCompositeOperation = 'source-over';
   edgeVignette(ctx, 0.35);
   gutterShade(ctx, false, 0.55);
@@ -478,7 +485,11 @@ export function endpaper(image: CanvasImageSource | undefined, size = 1024): HTM
   return c;
 }
 
+let leatherCache: HTMLCanvasElement | undefined;
+
+/** Teal leather grain for the boards (shared by the cover painting and the board edges). */
 export function leather(): HTMLCanvasElement {
+  if (leatherCache) return leatherCache;
   const [c, ctx] = canvas(512, 768);
   const g = ctx.createRadialGradient(170, 220, 30, 256, 384, 700);
   g.addColorStop(0, '#1d6680');
@@ -493,6 +504,7 @@ export function leather(): HTMLCanvasElement {
     ctx.arc(r() * 512, r() * 768, 0.6 + r() * 1.6, 0, Math.PI * 2);
     ctx.fill();
   }
+  leatherCache = c;
   return c;
 }
 

@@ -27,6 +27,7 @@ export function punch(host: HTMLElement, text: string, at: Point, water: boolean
 export class Cards {
   private readonly root = document.createElement('div');
   private readonly cards: HTMLElement[] = [];
+  private cardWidth = 0;
 
   constructor(host: HTMLElement, images: readonly (string | undefined)[], onFlip: () => void) {
     this.root.className = 'cards';
@@ -52,7 +53,10 @@ export class Cards {
   /** Fans the cards around a centre point; `width` is the space they may use. */
   place(center: Point, width: number): void {
     this.root.style.transform = `translate(${center.x}px, ${center.y}px)`;
-    const cardW = Math.min(170, width / 3.1);
+    // Card size and fan only change with the page size, not with the camera's gentle drift.
+    const cardW = Math.round(Math.min(170, width / 3.1));
+    if (cardW === this.cardWidth) return;
+    this.cardWidth = cardW;
     this.cards.forEach((card, i) => {
       const k = i - 2;
       card.style.setProperty('--w', `${cardW}px`);
@@ -186,6 +190,10 @@ export class TurnHint {
   place(at: Point): void {
     this.el.style.left = `${at.x}px`;
     this.el.style.top = `${at.y}px`;
+  }
+
+  get on(): boolean {
+    return this.el.classList.contains('on');
   }
 
   set(on: boolean): void {

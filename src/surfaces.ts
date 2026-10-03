@@ -15,6 +15,8 @@ import { chapterOf } from './ui/hud.ts';
 /** Paper leaves after the cover: title leaf + one per story page. */
 export const PAPER_LEAVES = book.pages.length + 1;
 const FIRST_PAGE_SPREAD = 2;
+/** Spread showing the endpaper and the title page, right after the cover opens. */
+export const TITLE_SPREAD = FIRST_PAGE_SPREAD - 1;
 
 export const spreadOf = (pageIndex: number): number => pageIndex + FIRST_PAGE_SPREAD;
 
@@ -65,6 +67,7 @@ export class Surfaces {
   private readonly revealed = new Map<number, number>();
   private readonly hotspotsOf = new Map<number, readonly Hotspot[]>();
   private coverMap?: Promise<THREE.CanvasTexture>;
+  private endpaper?: Promise<THREE.Material>;
 
   constructor(maxAnisotropy: number) {
     this.anisotropy = Math.min(MAX_ANISOTROPY, maxAnisotropy);
@@ -75,9 +78,10 @@ export class Surfaces {
 
   readonly source: SurfaceSource = (leaf, face) => this.make(leaf, face);
 
-  /** Inside of either cover. */
-  async endpaperMaterial(): Promise<THREE.Material> {
-    return owned(texture(endpaper(await artImage('endpaper')), 1));
+  /** Inside of both covers, shared; never disposed. */
+  endpaperMaterial(): Promise<THREE.Material> {
+    this.endpaper ??= artImage('endpaper').then((img) => printed(texture(endpaper(img), 1)));
+    return this.endpaper;
   }
 
   /** The painted front cover, shared by the cover leaf and its reflection; never disposed. */

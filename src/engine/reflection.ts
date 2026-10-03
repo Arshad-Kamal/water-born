@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { COVER_DEPTH, COVER_H, COVER_W, type Book } from './book3d.ts';
+import { canvas } from './pages.ts';
 import { tween } from './ticker.ts';
 
 /** Gap between the hovering book and the water it is mirrored in. */
@@ -8,10 +9,7 @@ const OPACITY = 0.24;
 const FADE_SECONDS = 0.8;
 
 function fadeMap(): THREE.CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = 4;
-  c.height = 64;
-  const ctx = c.getContext('2d')!;
+  const [c, ctx] = canvas(4, 64);
   // Canvas top lands at v=1 (the cover's top, far from the water), so fade from there.
   const g = ctx.createLinearGradient(0, 0, 0, c.height);
   g.addColorStop(0, '#000');

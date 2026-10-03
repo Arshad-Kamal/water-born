@@ -5,8 +5,8 @@ import * as THREE from 'three';
 import { artImage, artUrl, hasArt } from './assets.ts';
 import type { Mixer } from './audio/mixer.ts';
 import { blockStarts, book, pageText, type Page } from './content/book.ts';
-import { spokenChars, type NarrationTiming } from './content/narration-timing.ts';
-import { CARDS_PHRASE, COUNT_WORDS, FIRES_OUT_PHRASE, SCENES, TEAM, type Cue, type Scene } from './content/scenes.ts';
+import { spokenChars, timeOf, type NarrationTiming } from './content/narration-timing.ts';
+import { CARDS_PHRASE, cardArtName, COUNT_WORDS, FIRES_OUT_PHRASE, SCENES, TEAM, type Cue, type Scene } from './content/scenes.ts';
 import type { Backdrop } from './engine/backdrop.ts';
 import { PAGE_H, PAGE_W, type Book } from './engine/book3d.ts';
 import type { Cinema } from './engine/cinema.ts';
@@ -14,7 +14,7 @@ import { INK_TAIL } from './engine/ink.ts';
 import type { Particles } from './engine/particles.ts';
 import type { Framing, Stage } from './engine/stage.ts';
 import { wait } from './engine/ticker.ts';
-import { pageAt, spreadOf, type Surfaces } from './surfaces.ts';
+import { pageAt, spreadOf, TITLE_SPREAD, type Surfaces } from './surfaces.ts';
 import { chapterOf, Hud } from './ui/hud.ts';
 import { Cards, Count, Fires, punch, replayButton, TurnHint, type Point } from './ui/overlays.ts';
 
@@ -61,8 +61,12 @@ interface Reading {
   readonly total: number;
   readonly marks: Mark[];
   next: number;
-  /** 'intro' while a push-in plays; the words wait. */
+  /** 'intro' while a push-in plays or the narrator first loads; the words wait. */
   mode: 'intro' | 'voice' | 'timed';
+  /** An interaction holding the reading until a tap or its timeout. */
+  gate?: Gate;
+  /** The reader tapped to skip the push-in. */
+  skipPushIn: boolean;
   /** Characters the reading has reached (narration position or reading pace). */
   clock: number;
   /** Characters inked in on the page; follows `clock` smoothly and never goes back. */
@@ -106,10 +110,9 @@ export interface DirectorParts {
   readonly captions: HTMLElement;
 }
 
-const sceneForSpread = (spread: number): Scene => {
-  const index = Math.min(Math.max(spread - spreadOf(0), 0), book.pages.length - 1);
-  return SCENES[book.pages[index]!.scene]!;
-};
+/** The story page a spread belongs to; cover and title count as the first page, credits as the last. */
+const nearestPage = (spread: number): number => pageAt(spread) ?? (spread <= TITLE_SPREAD ? 0 : book.pages.length - 1);
+const sceneForSpread = (spread: number): Scene => SCENES[book.pages[nearestPage(spread)]!.scene]!;
 
 export class Director {
   private readonly p: DirectorParts;
@@ -127,10 +130,8 @@ export class Director {
   /** Bumped on every turn; async work started for an older spread checks it and stops. */
   private token = 0;
   private reading?: Reading;
-  private gate?: Gate;
   private interactions: Interactions = {};
   private replay?: HTMLButtonElement;
-  private skipPushIn = false;
   private idleFor = 0;
   private frozen = false;
   private readonly v = new THREE.Vector3();
@@ -142,7 +143,7 @@ export class Director {
       toggleVoice: () => this.setVoice(!this.voice),
       togglePause: () => this.setPaused(!this.paused),
       goToPage: (i) => this.p.book.turnTo(spreadOf(i), true),
-      goToStart: () => this.p.book.turnTo(1, true),
+      goToStart: () => this.p.book.turnTo(TITLE_SPREAD, true),
     });
     this.hint = new TurnHint(parts.fx);
     parts.book.onTurnStart = (from, to) => this.turnStarted(from, to);
@@ -157,11 +158,11 @@ export class Director {
     this.voice = voice;
     this.hud.setVoice(voice);
     this.hud.show(true);
-    this.p.book.turnTo(1);
+    this.p.book.turnTo(TITLE_SPREAD);
   }
 
   canTurn(dir: 1 | -1): boolean {
-    return this.started && (dir === 1 || this.spread > 1);
+    return this.started && (dir === 1 || this.spread > TITLE_SPREAD);
   }
 
   next(): void {
@@ -178,12 +179,12 @@ export class Director {
     if (this.paused) return this.setPaused(false);
     const r = this.reading;
     if (r?.mode === 'intro') {
-      this.skipPushIn = true;
+      r.skipPushIn = true;
       return;
     }
     if (side === -1) return this.prev();
     if (r && this.tapSoundWord(at, r)) return;
-    if (this.gate) return this.resolveGate(false);
+    if (r?.gate) return this.resolveGate(r, false);
     if (r && !this.isDone(r) && !r.revealAll) return this.completeReveal(r);
     this.next();
   }
@@ -201,9 +202,9 @@ export class Director {
     if (!this.started || this.paused) return;
     const r = this.reading;
     if (!r) return this.updateIdle(dt);
-    if (this.gate) {
-      this.gate.elapsed += dt;
-      if (this.gate.elapsed > GATE_AUTO_SECONDS) this.resolveGate(false);
+    if (r.gate) {
+      r.gate.elapsed += dt;
+      if (r.gate.elapsed > GATE_AUTO_SECONDS) this.resolveGate(r, false);
     } else if (r.mode === 'timed') {
       r.clock = Math.min(r.total, r.clock + READ_CPS * dt);
     } else if (r.mode === 'voice' && !r.resuming && r.timing) {
@@ -228,6 +229,9 @@ export class Director {
     this.spread = to;
     this.turning = true;
     this.leavePage();
+    // Every page arrives blank and inks in again, revisits included.
+    const arriving = pageAt(to);
+    if (arriving !== undefined) this.p.surfaces.setReveal(arriving, 0);
     this.p.mixer.playSfx(from === 0 ? 'book-open' : 'page-turn');
     this.setScene(to, this.started);
     this.p.stage.frame(this.framing(to));
@@ -244,7 +248,7 @@ export class Director {
     const index = pageAt(spread);
     const nextIndex = pageAt(spread + 1);
     if (nextIndex !== undefined) this.p.mixer.prefetchNarration(book.pages[nextIndex]!.id);
-    if (spread === this.p.book.leafCount) this.replay = replayButton(this.p.ui, () => this.p.book.turnTo(1, true));
+    if (spread === this.p.book.leafCount) this.replay = replayButton(this.p.ui, () => this.p.book.turnTo(TITLE_SPREAD, true));
     if (index !== undefined) void this.readPage(index, this.token);
   }
 
@@ -252,15 +256,11 @@ export class Director {
     const r = this.reading;
     if (r) this.p.surfaces.setReveal(r.pageIndex, r.total + INK_TAIL);
     this.reading = undefined;
-    this.gate = undefined;
-    this.skipPushIn = false;
     this.p.mixer.stopNarration();
     this.p.app.classList.remove(CINEMATIC_CLASS);
     this.setFrozen(false);
     this.invite(false, 0);
-    this.interactions.cards?.remove();
-    this.interactions.count?.remove();
-    this.interactions.fires?.remove();
+    for (const interaction of Object.values(this.interactions)) interaction?.remove();
     this.interactions = {};
     this.replay?.remove();
     this.replay = undefined;
@@ -271,7 +271,7 @@ export class Director {
     const scene = sceneForSpread(spread);
     const { mixer, stage, particles } = this.p;
     if (withSound) {
-      mixer.setMusic(spread <= 1 ? 'theme' : scene.music);
+      mixer.setMusic(spread <= TITLE_SPREAD ? 'theme' : scene.music);
       mixer.setAmbience(scene.ambience);
       if (!scene.underwater) mixer.setUnderwater(false);
     }
@@ -283,7 +283,7 @@ export class Director {
   private async showBackdrop(spread: number, token: number): Promise<void> {
     // Story spreads use their own painting; cover, title and credits prefer the calm chapter plate.
     const story = pageAt(spread);
-    const index = story ?? (spread <= 1 ? 0 : book.pages.length - 1);
+    const index = nearestPage(spread);
     const pageArt = book.pages[index]!.id;
     const plate = `plate-ch${chapterOf(index).number}`;
     const name = (story === undefined ? [plate, pageArt] : [pageArt, plate]).find(hasArt);
@@ -310,11 +310,10 @@ export class Director {
     const text = pageText(page);
     const r: Reading = {
       pageIndex, page, scene, starts: blockStarts(page), total: text.length, marks: [], next: 0,
-      mode: 'intro', clock: 0, reveal: 0, revealAll: false, startedAt: 0, resuming: false, narrationOver: false, doneFor: 0,
+      mode: 'intro', skipPushIn: false, clock: 0, reveal: 0, revealAll: false, startedAt: 0, resuming: false, narrationOver: false, doneFor: 0,
     };
     this.reading = r;
     this.p.captions.textContent = text;
-    this.p.surfaces.setReveal(pageIndex, 0);
     r.marks.push(...this.cueMarks(r, text), ...this.setUpInteraction(r, text));
     r.marks.sort((a, b) => a.index - b.index);
 
@@ -330,7 +329,7 @@ export class Director {
   /** Camera pushes into the picture page, the painting fills the screen, then back to the spread. */
   private async pushIn(r: Reading, token: number): Promise<void> {
     const { app, book, stage, cinema } = this.p;
-    const alive = (): boolean => token === this.token && !this.skipPushIn;
+    const alive = (): boolean => token === this.token && !r.skipPushIn;
     app.classList.add(CINEMATIC_CLASS);
     stage.frame({ look: book.pagePoint(-1, new THREE.Vector3()), halfW: PAGE_W * 0.52, halfH: PAGE_H * 0.52 });
     await wait(1.1);
@@ -348,6 +347,7 @@ export class Director {
     r.resuming = true;
     try {
       r.timing ??= await this.p.mixer.narrationTiming(r.page.id);
+      if (r !== this.reading || !this.voice) return;
       const offset = from > 0 ? Math.max(0, timeOf(r.timing, r.starts, from) - GATE_LEAD_IN) : 0;
       const startedAt = await this.p.mixer.playNarration(r.page.id, offset);
       if (startedAt === undefined || r !== this.reading || !this.voice) return;
@@ -358,6 +358,8 @@ export class Director {
       if (r === this.reading) r.mode = 'timed';
     } finally {
       r.resuming = false;
+      // Narration turned off or failed before it began: a page still on screen reads at pace.
+      if (r === this.reading && r.mode === 'intro') r.mode = 'timed';
     }
   }
 
@@ -375,11 +377,11 @@ export class Director {
   }
 
   private isDone(r: Reading): boolean {
-    return !this.gate && r.mode !== 'intro' && !r.resuming && r.clock >= r.total && (r.mode === 'timed' || r.narrationOver);
+    return !r.gate && r.mode !== 'intro' && !r.resuming && r.clock >= r.total && (r.mode === 'timed' || r.narrationOver);
   }
 
   private advanceMarks(r: Reading, silent: boolean): void {
-    while (!this.gate && r.next < r.marks.length && r.marks[r.next]!.index < r.clock) {
+    while (!r.gate && r.next < r.marks.length && r.marks[r.next]!.index < r.clock) {
       const mark = r.marks[r.next++]!;
       mark.run(silent);
       if (!mark.resolve) continue;
@@ -387,17 +389,16 @@ export class Director {
         mark.resolve(true);
       } else {
         r.clock = mark.index;
-        this.gate = { mark, elapsed: 0 };
+        r.gate = { mark, elapsed: 0 };
         if (r.mode === 'voice') this.p.mixer.stopNarration();
       }
     }
   }
 
-  private resolveGate(silent: boolean): void {
-    const gate = this.gate;
-    const r = this.reading;
-    if (!gate || !r) return;
-    this.gate = undefined;
+  private resolveGate(r: Reading, silent: boolean): void {
+    const gate = r.gate;
+    if (!gate) return;
+    r.gate = undefined;
     gate.mark.resolve?.(silent);
     r.clock = gate.mark.index + 1;
     if (r.mode === 'voice') void this.speak(r, gate.mark.index);
@@ -420,7 +421,7 @@ export class Director {
     if (!on) {
       this.p.mixer.stopNarration();
       if (r?.mode === 'voice') r.mode = 'timed';
-    } else if (r && r.mode === 'timed' && !this.gate && r.clock < r.total) {
+    } else if (r && r.mode === 'timed' && !r.gate && r.clock < r.total) {
       void this.speak(r, Math.floor(r.clock));
     }
   }
@@ -433,7 +434,7 @@ export class Director {
 
   private updateIdle(dt: number): void {
     this.idleFor += dt;
-    const onTitle = this.settled === 1 && this.spread === 1;
+    const onTitle = this.settled === TITLE_SPREAD && this.spread === TITLE_SPREAD;
     this.invite(onTitle && this.idleFor > HINT_AFTER_SECONDS, this.idleFor);
     if (onTitle && this.voice && this.idleFor > TITLE_HOLD_SECONDS) this.next();
   }
@@ -495,7 +496,7 @@ export class Director {
     const { fx, mixer } = this.p;
     switch (r.scene.interaction) {
       case 'cards': {
-        const images = TEAM.map((m) => (hasArt(`card-${m.name.toLowerCase()}`) ? artUrl(`card-${m.name.toLowerCase()}`) : undefined));
+        const images = TEAM.map(({ name }) => (hasArt(cardArtName(name)) ? artUrl(cardArtName(name)) : undefined));
         const cards = new Cards(fx, images, () => mixer.playSfx('card-flip'));
         this.interactions.cards = cards;
         return [
@@ -510,7 +511,7 @@ export class Director {
         ];
       }
       case 'count': {
-        const count = new Count(fx, () => (this.gate ? this.resolveGate(false) : mixer.playSfx('count-chime')));
+        const count = new Count(fx, () => (r.gate ? this.resolveGate(r, false) : mixer.playSfx('count-chime')));
         this.interactions.count = count;
         return COUNT_WORDS.map((word, i) => ({
           index: text.indexOf(word),
@@ -555,14 +556,6 @@ export class Director {
     }
     count?.place(this.screen(book.pageUvPoint(-1, 0.5, 0.3, this.v)));
     if (fires) FIRE_SPOTS.forEach(([u, v], i) => fires.place(i, this.screen(book.pageUvPoint(-1, u, v, this.v))));
-    this.hint.place(this.screen(book.pageUvPoint(1, 0.93, 0.07, this.v)));
+    if (this.hint.on) this.hint.place(this.screen(book.pageUvPoint(1, 0.93, 0.07, this.v)));
   }
-}
-
-/** Seconds into the narration clip at which character `index` of the page is spoken. */
-function timeOf(timing: NarrationTiming, starts: readonly number[], index: number): number {
-  let block = 0;
-  while (block + 1 < starts.length && starts[block + 1]! <= index) block++;
-  const at = timing.blocks[block]?.at ?? [];
-  return at[Math.min(Math.max(index - starts[block]!, 0), at.length - 1)] ?? 0;
 }

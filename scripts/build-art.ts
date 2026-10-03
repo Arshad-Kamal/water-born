@@ -5,11 +5,11 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { cardArtName, TEAM } from '../src/content/scenes.ts';
 
 const SRC = new URL('../assets-in/', import.meta.url);
 const OUT = new URL('../public/art/', import.meta.url);
 const QUALITY = '82';
-const HEROES = ['kyle', 'logan', 'ruby', 'zoro', 'flora'];
 
 /** ffmpeg filter per kind of picture; sizes match how big each is ever shown. */
 const FILTER = {
@@ -38,8 +38,8 @@ function jobFor(file: string): Job | undefined {
   if (base === 'cover') return { name: base, file, filter: FILTER.page };
   if (base === 'endpaper') return { name: base, file, filter: FILTER.endpaper };
   if (/^plate-ch[1-3]$/.test(base)) return { name: base, file, filter: FILTER.plate };
-  const hero = /^char-(.+)$/.exec(base)?.[1];
-  if (hero && HEROES.includes(hero)) return { name: `card-${hero}`, file, filter: FILTER.card };
+  const hero = TEAM.find((m) => base === `char-${m.name.toLowerCase()}`);
+  if (hero) return { name: cardArtName(hero.name), file, filter: FILTER.card };
   return undefined;
 }
 
