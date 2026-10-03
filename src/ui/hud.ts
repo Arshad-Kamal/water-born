@@ -138,10 +138,21 @@ export function startScreen(host: HTMLElement, onChoose: (voice: boolean) => voi
   return el;
 }
 
+/** A falling water drop (point up, round bottom); the water rises with --p, clipped to the outline. */
+const DROP_PATH = 'M32 4C32 4 8 31 8 52a24 24 0 0 0 48 0C56 31 32 4 32 4Z';
+const LOADER_DROP = `<svg class="drop" viewBox="0 0 64 80" aria-hidden="true">
+  <defs>
+    <clipPath id="drop-clip"><path d="${DROP_PATH}"/></clipPath>
+    <linearGradient id="drop-water" x1="0" y1="0" x2="0" y2="1"><stop class="hi" offset="0"/><stop class="lo" offset="1"/></linearGradient>
+  </defs>
+  <g clip-path="url(#drop-clip)"><rect class="fill" x="0" y="4" width="64" height="72" fill="url(#drop-water)"/></g>
+  <path class="outline" d="${DROP_PATH}"/>
+</svg>`;
+
 export function loader(host: HTMLElement): { progress(p: number): void; done(): void } {
   const el = document.createElement('div');
   el.className = 'loader';
-  el.innerHTML = '<div><div class="drop"><div class="fill"></div></div><p>Filling the river…</p></div>';
+  el.innerHTML = `<div>${LOADER_DROP}<p>Filling the river…</p></div>`;
   host.append(el);
   return {
     progress: (p) => el.style.setProperty('--p', String(p)),

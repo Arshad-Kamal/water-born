@@ -37,10 +37,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 /* ---------- loader ---------- */
 .loader { position: absolute; inset: 0; display: grid; place-items: center; background: #04090d; transition: opacity 0.8s; }
 .loader.done { opacity: 0; pointer-events: none; }
-.loader .drop { width: 64px; height: 64px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); position: relative; overflow: hidden;
-  box-shadow: inset 0 0 0 2px rgba(127, 219, 231, 0.6), 0 0 30px rgba(63, 184, 201, 0.25); }
-.loader .fill { position: absolute; left: -20%; right: -20%; bottom: 0; height: calc(var(--p, 0) * 100%); transform: rotate(45deg); transform-origin: bottom;
-  background: linear-gradient(180deg, var(--aqua-hi), var(--teal)); transition: height 0.3s; }
+.loader .drop { display: block; width: 56px; height: 70px; margin: 0 auto; overflow: visible; filter: drop-shadow(0 0 14px rgba(63, 184, 201, 0.3)); }
+.loader .drop .hi { stop-color: var(--aqua-hi); }
+.loader .drop .lo { stop-color: var(--teal); }
+.loader .fill { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--p, 0)); transition: transform 0.3s; }
+.loader .outline { fill: none; stroke: rgba(127, 219, 231, 0.6); stroke-width: 2; }
 .loader p { margin: 22px 0 0; font: italic 400 17px var(--body); color: #7f9da7; text-align: center; }
 
 /* ---------- start ---------- */
