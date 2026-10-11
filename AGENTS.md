@@ -10,6 +10,26 @@ James, hosted free on GitHub Pages.
 Read order for a session: this file → `docs/plan.md` (status + decisions) →
 `docs/stack-notes.md` → the code.
 
+## Editing this file
+
+This AGENTS.md keeps a fixed structure: every section stays, in its current
+order, and you may add a new section beside the material it relates to — never
+inside or against a locked block, never restating or softening a locked block or
+a standing rule — when a durable concern has no home. The **DRDYK** section, the **DOX framework** rules
+below, and this section are locked, shared text — never rewrite, reword, move,
+add to, or delete any part of them. Two slots inside the framework are
+project-owned and maintained like the other recorded content: **User
+Preferences** and **Child DOX Index**.
+
+**Recorded content** — anything written for this project: filled-in stub content, facts,
+preferences, index entries — is what evolves here; fill and reword it freely as
+the project's reality calls for it. A **standing rule** is template-authored
+guidance outside the locked text: one is corrected in place when reality
+overtakes it (including marking it no longer applicable), never dropped. The DOX rules about removing stale or contradictory text and about
+trimming govern the recorded content — it is how this file stays true as the
+codebase changes — never the locked text, a section's place in the structure,
+or a standing rule. Nothing is removed just to make the file shorter.
+
 ## DRDYK — engineering principles
 
 Five letters, one bar, applied to every task. When the user says **DRDYK**,
@@ -69,7 +89,7 @@ proportion to how likely and costly a failure is.
 On a surface a person will see and judge — UI, page, dashboard, deck, document
 — the design is part of the requirement, not decoration. The brief and the
 user's ask set the bar for how good it looks; DRDYK governs the code
-underneath, not the ambition of the design. Use the `design` skill when it is
+underneath, not the ambition of the design. Use the `design-principles` skill when it is
 available, and build the committed direction fully rather than hedging it.
 "Smallest change" and "fewest moving parts" mean no speculative UI machinery,
 no extra dependencies, clean componentization — never a plainer result than
@@ -206,6 +226,9 @@ or assert a positive success marker in the output ("Tests 1234 passed",
   mechanism, the way the repo already does it (a changeset, a conventional commit,
   a hand-kept CHANGELOG). Don't hand-edit a generated changelog during feature
   work. If the project has no such mechanism, don't add one uninvited.
+- When another session may hold edits in a file you commit (several sessions in one
+  checkout), commit through the `commit-own-edits` skill's script (usage: its
+  `SKILL.md`): it commits only your edits and never sweeps in or reverts theirs.
 
 ## Coding standards & version notes
 - If the `coding-standards` skill has a standard for this project's stack, load it
@@ -354,6 +377,18 @@ When the user requests a durable behavior change, record it here or in the relev
 
 - Creative liberty on art, audio, effects, and details; the story words never change.
 - Only one narration voice (credit budget).
+
+## Durable facts
+
+Two homes, split by kind. Capture either on the spot when stated — that is the DOX
+pass, not a separate chore — and update the row when its fact changes.
+
+- **Behavioral rules** (how the user wants agents to work: go-aheads, formats,
+  ground-truth sources, style) live in this root AGENTS.md. Keep them lean; every
+  session reads this file.
+- **Reference facts** (names, inventories, specs, dated states) live in
+  `docs/<topic>-facts.md`, listed by a one-line pointer in the Child DOX Index. Pull
+  a facts file when a task needs it; it is never pushed into every session.
 
 ## Child DOX Index
 
