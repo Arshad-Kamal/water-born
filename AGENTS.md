@@ -161,8 +161,9 @@ one-line fix, a comment, or a typo.
    implementation batch (if the project commits per task).
 2. Review every applicable category in one round — for code, fan out
    `launch_reviewer` `scopes` over the change (always-on floor:
-   `logic-and-edge-cases` + `readability-and-maintainability`; add the rest by
-   trigger). Hand the reviewer the dismissed/deferred findings from earlier
+   `logic-and-edge-cases` + `readability-and-maintainability`, plus
+   `conventions-and-standards` when the project declares a standards index; add
+   the rest by trigger). Hand the reviewer the dismissed/deferred findings from earlier
    rounds so it can't re-raise them.
 3. A category that reports zero findings is closed — never rerun it.
 4. Disposition every finding against the task; record each dismissed/deferred
@@ -231,10 +232,11 @@ or assert a positive success marker in the output ("Tests 1234 passed",
   `SKILL.md`): it commits only your edits and never sweeps in or reverts theirs.
 
 ## Coding standards & version notes
-- If the `coding-standards` skill has a standard for this project's stack, load it
-  and read the relevant standard before writing or reviewing code, and cite its
-  rule IDs (e.g. `TS-FUNC-02`). If it has none for this stack, follow the
-  project's own standards docs and the Conventions below.
+- This project's own standards govern (§ Conventions, or `docs/standards/` once
+  they move there). If the `coding-standards` skill has a standard for this
+  project's stack, load it and read the relevant standard before writing or
+  reviewing code, and apply it where the project's standards are silent. Cite the
+  rule IDs of whichever applies (the skill's look like `TS-FUNC-02`).
 - Match the project's **actual installed versions** (read the lockfile/manifest),
   never "the latest that exists." A standard's durable rules are
   version-independent; for anything version-specific, verify against the installed
@@ -243,10 +245,10 @@ or assert a positive success marker in the output ("Tests 1234 passed",
   each fact pinned to the version and dated, so the next session doesn't
   re-research; re-verify when the version changes. Record version-specific gotchas
   you hit while debugging there too, and add a regression test where it fits.
-- Where a project convention conflicts with the cross-project standard, follow the
-  project's convention locally and record the override in § Conventions below, so
-  the standard is not re-applied there. Never mutate the cross-project standard
-  itself.
+- Where a project convention conflicts with the cross-project standard, the
+  project's convention wins; record the override in the project's standards
+  (§ Conventions, or `docs/standards/`), so the cross-project standard is not
+  re-applied there. Never mutate the cross-project standard itself.
 
 ## Security rules (project-specific)
 - The ElevenLabs key lives only in `.env` (gitignored, mode 600). Never commit
@@ -285,9 +287,20 @@ cutting words loses information, keep them.
 
 This is also the home for a **local override** of the cross-project coding standard
 (§ Coding standards & version notes): where the project's convention diverges it
-wins locally and is recorded here, and the cross-project standard is never mutated.
-If this section ever grows large, the DOX Files & organization rule crystallizes it
-into `docs/` like any other section.
+wins locally and is recorded here (in `docs/standards/` once the conventions move
+there), and the cross-project standard is never mutated.
+
+Write each convention as a rule with a stable ID and a tier (`must` / `should` /
+`consider`), so a review can cite it and weigh it. Conventions start here. Once they
+outgrow this section, move them to `docs/standards/`: a core file read every
+session, topic files read when the work touches them, and an index
+(`docs/standards/AGENTS.md`) mapping kinds of file or work to the standards that
+govern them. A new or changed convention lands in its standard and its index line
+in the same commit. Once the index exists, declare it as `standardsIndex` in
+`.sayl/reviewer-profile.json` (a new file is
+`{"version": 1, "standardsIndex": "docs/standards/AGENTS.md"}`; an existing one
+gains the key), so code reviews can add the `conventions-and-standards` reviewer
+and other reviews check against the same rules.
 
 # DOX framework
 
